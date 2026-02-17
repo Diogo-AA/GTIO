@@ -92,7 +92,7 @@ No se busca sobreingeniería, sino claridad y coherencia.
 
 ## 2.1 Nomenclatura
 
- Las convenciones de nomenclatura varían dependiendo del lenguaje que se esté usando. Por ejemplo en C# se usa PascalCase para los métodos: CalcularTotalVotos(), en Python se usa snake_kase: calcular_total_votos() y en JavaScript se usa camelCase: calcularTotalVotos().
+ Las convenciones de nomenclatura varían dependiendo del lenguaje que se esté usando. Por ejemplo en C# se usa PascalCase para los métodos: CalcularTotalVotos(), en Python se usa snake_case: calcular_total_votos() y en JavaScript se usa camelCase: calcularTotalVotos().
 
  Usaremon la nomenclatura convencional en función del lenguaje de programación que estemos usando.
  
