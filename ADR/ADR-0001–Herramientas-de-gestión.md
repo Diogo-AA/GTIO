@@ -59,7 +59,10 @@ Opción elegida: "GitHub (Repositorio + Projects)", porque:
 
 ## Herramientas de comunicación adicional
 
-Además de GitHub como herramienta principal de gestión, el equipo utiliza **WhatsApp** como canal de comunicación directa.
+Además de GitHub como herramienta principal de gestión, el equipo utiliza:
+
+* **WhatsApp** como canal de comunicación directa.
+* **Discord** como canal para la elaboración y coordinación de reuniones, y como sistema para almacenar notas y acuerdos derivados de las propias reuniones.
 
 Su finalidad es:
 
@@ -67,8 +70,10 @@ Su finalidad es:
 - Resolución ágil de dudas puntuales.
 - Apoyo en la toma de decisiones inmediatas.
 - Organización informal de reuniones o tareas urgentes.
+- Preparación de reuniones (agenda, puntos a tratar y reparto de tareas).
+- Registro de notas, acuerdos y seguimiento de acciones tras cada reunión.
 
-WhatsApp no sustituye a GitHub como sistema de gestión formal, sino que actúa como herramienta complementaria de comunicación interna.
+WhatsApp y Discord no sustituyen a GitHub como sistema de gestión formal, sino que actúan como herramientas complementarias de comunicación interna.
 
 ---
 
@@ -139,7 +144,6 @@ WhatsApp no sustituye a GitHub como sistema de gestión formal, sino que actúa 
 ### Google Suite (Gsuite)
 
 * Positivo, porque permite colaboración documental.
-* Positivo, porque es accesible desde cualquier navegador.
 * Negativo, porque no tiene integración nativa con control de versiones Git.
 * Negativo, porque no permite trazabilidad técnica entre tareas y código.
 
@@ -148,15 +152,3 @@ WhatsApp no sustituye a GitHub como sistema de gestión formal, sino que actúa 
 ## Enlaces
 
 * Repositorio principal del proyecto: https://github.com/Diogo-AA/GTIO
-
----
-
-## Consideraciones adicionales
-
-Se establece como norma del equipo:
-
-1. Cada tarea debe crearse como Issue.
-2. Cada desarrollo debe realizarse en una rama asociada a un Issue.
-3. Cada Pull Request debe referenciar explícitamente el Issue correspondiente.
-4. No se permite trabajo directo en `main`.
-
