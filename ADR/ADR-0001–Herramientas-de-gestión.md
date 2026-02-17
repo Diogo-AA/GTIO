@@ -151,4 +151,4 @@ WhatsApp y Discord no sustituyen a GitHub como sistema de gestión formal, sino 
 
 ## Enlaces
 
-* Repositorio principal del proyecto: https://github.com/Diogo-AA/GTIO
+* https://github.com/Diogo-AA/GTIO/ADR/ADR-0001–Herramientas-de-gestión.md
