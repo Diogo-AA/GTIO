@@ -1,0 +1,15 @@
+services:
+  base_datos:
+    image: mysql:8.4
+    container_name: bbdd_votacion_mysql
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${PUERTO_MYSQL}:3306"
+    volumes:
+      - datos_mysql:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  datos_mysql:
