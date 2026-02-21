@@ -1,4 +1,4 @@
-# ADR-004 – Organización del Equipo y Metodología de Gestión
+# ADR-009 – Organización del Equipo y Metodología de Gestión
 
 * Estado: Aceptado  
 * Responsables: Jon Arriazu, Diogo Da Cunha, Cristian Meneses  
@@ -26,7 +26,7 @@ El problema a resolver es:
 ## Factores en la Decisión
 
 * Adaptabilidad ante cambios de requisitos.
-* Reducción de riesgos en despliegues (evitar el efecto "Big Bang").
+* Reducción de riesgos en despliegues.
 * Alineación con los requisitos técnicos de Docker y microservicios.
 * Sostenibilidad del conocimiento técnico (evitar silos).
 * Capacidad de respuesta ante incidencias en producción.
@@ -37,17 +37,17 @@ El problema a resolver es:
 
 * **Metodología en Cascada (Waterfall):** Fases secuenciales rígidas.
 * **Kanban:** Flujo continuo de trabajo sin iteraciones fijas.
-* **Scrum (Framework Ágil) + Cultura DevOps:** Trabajo iterativo con equipo multidisciplinar.
+* **Scrum (Framework Ágil):** Trabajo iterativo con equipo multidisciplinar.
 
 ---
 
 ## Decisión
 
-Opción elegida: **"Scrum + Cultura DevOps"**, porque:
+Opción elegida: **"Scrum "**, porque:
 
 - Permite realizar entregas funcionales cada 2 semanas, validando la arquitectura constantemente.
 - Fomenta un Equipo Multidisciplinar (Cross-Functional Squad) donde no hay silos entre desarrollo y sistemas.
-- Implementa la filosofía , haciendo al equipo responsable de su código en producción.
+- Implementa la filosofía, haciendo al equipo responsable de su código en producción.
 - Facilita la gestión de cambios entre galas sin romper la planificación anual.
 - Garantiza que la infraestructura (Dockerfiles, Compose) se trate como código (**IaC**).
 
