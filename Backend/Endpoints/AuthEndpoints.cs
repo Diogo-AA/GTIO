@@ -1,5 +1,6 @@
 using Backend.Contracts.Requests;
 using Backend.Contracts.Responses;
+using Backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Endpoints;
@@ -18,18 +19,27 @@ public static class AuthEndpoints
 
         app.MapPost("register", RegisterAsync)
             .Produces<RegisterResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status409Conflict)
             .ProducesValidationProblem()
             .AllowAnonymous()
             .WithName("Register");
     }
 
-    public static async Task<IResult> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken)
+    public static async Task<IResult> LoginAsync([FromBody] LoginRequest request, IAuthService authService, CancellationToken cancellationToken)
     {
-        return TypedResults.Ok(new LoginResponse { AccessToken = "" });
+        var response = await authService.LoginAsync(request, cancellationToken);
+        if (response is null)
+            return TypedResults.NotFound();
+
+        return TypedResults.Ok(response);
     }
 
-    public static async Task<IResult> RegisterAsync([FromBody] RegisterRequest request, CancellationToken cancellationToken)
+    public static async Task<IResult> RegisterAsync([FromBody] RegisterRequest request, IAuthService authService, CancellationToken cancellationToken)
     {
-        return TypedResults.Ok(new RegisterResponse { AccessToken = "" });
+        var response = await authService.RegisterAsync(request, cancellationToken);
+        if (response is null)
+            return TypedResults.Conflict();
+
+        return TypedResults.Ok(response);
     }
 }

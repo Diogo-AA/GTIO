@@ -1,5 +1,6 @@
 using Backend.Contracts.Requests;
 using Backend.Contracts.Responses;
+using Backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Endpoints;
@@ -50,45 +51,42 @@ public static class VotingEndpoints
             .WithName("GetGala");
     }
 
-    public static async Task<IResult> GetUsuarios(CancellationToken cancellationToken)
+    public static async Task<IResult> GetUsuarios(IVotingService votingService, CancellationToken cancellationToken)
     {
-        return TypedResults.Ok(new GetUsuariosResponse 
-        { 
-            Usuarios = []
-        });
+        var response = await votingService.GetUsuariosAsync(cancellationToken);
+        return TypedResults.Ok(response);
     }
 
-    public static async Task<IResult> GetUsuario([FromRoute] int id , CancellationToken cancellationToken)
+    public static async Task<IResult> GetUsuario([FromRoute] int id, IVotingService votingService, CancellationToken cancellationToken)
     {
-        return TypedResults.Ok(new GetUsuarioResponse 
-        { 
-            Id = 0,
-            Username = "",
-            Votos = []
-        });
+        var response = await votingService.GetUsuarioAsync(id, cancellationToken);
+        if (response is null)
+            return TypedResults.NotFound();
+
+        return TypedResults.Ok(response);
     }
 
-    public static async Task<IResult> CrearVoto([FromBody] CrearVotoRequest request, CancellationToken cancellationToken)
+    public static async Task<IResult> CrearVoto([FromBody] CrearVotoRequest request, IVotingService votingService, CancellationToken cancellationToken)
     {
+        var success = await votingService.CrearVotoAsync(request, cancellationToken);
+        if (!success)
+            return TypedResults.BadRequest();
+
         return TypedResults.Created();
     }
 
-    public static async Task<IResult> GetGalas(CancellationToken cancellationToken)
+    public static async Task<IResult> GetGalas(IVotingService votingService, CancellationToken cancellationToken)
     {
-        return TypedResults.Ok(new GetGalasResponse
-        {
-            Galas = []
-        });
+        var response = await votingService.GetGalasAsync(cancellationToken);
+        return TypedResults.Ok(response);
     }
 
-    public static async Task<IResult> GetGala([FromRoute] int id, CancellationToken cancellationToken)
+    public static async Task<IResult> GetGala([FromRoute] int id, IVotingService votingService, CancellationToken cancellationToken)
     {
-        return TypedResults.Ok(new GetGalaResponse
-        {
-            Id = 0,
-            Nombre = "",
-            Candidatos = [],
-            Fecha = DateTime.Now
-        });
+        var response = await votingService.GetGalaAsync(id, cancellationToken);
+        if (response is null)
+            return TypedResults.NotFound();
+            
+        return TypedResults.Ok(response);
     }
 }

@@ -5,6 +5,9 @@ using Backend.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using MySqlConnector;
+using Backend.Data;
+using Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +33,6 @@ builder.Services.AddAuthorization();
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 builder.Services.AddScoped<JwtTokenProvider>();
-builder.Services.AddScoped<PasswordHasher>();
 
 builder.Services.AddCors(options =>
 {
@@ -59,6 +61,14 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddValidation();
+
+builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Db:ConnString")!);
+
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IGalaRepository, GalaRepository>();
+builder.Services.AddScoped<IVotoRepository, VotoRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IVotingService, VotingService>();
 
 var app = builder.Build();
 
