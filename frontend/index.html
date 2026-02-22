@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OT Voting · Bermejo Inc.</title>
+    <meta name="description" content="Sistema de votación de Operación Triunfo — Bermejo Inc." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <div id="app">
+
+        <!-- NAV -->
+        <nav>
+            <div class="nav-brand">🎤 OT Voting</div>
+
+            <div class="nav-links" id="nav-links" style="display:none;">
+                <button class="tab" data-nav="galas">Galas</button>
+                <button class="tab" data-nav="usuarios">Usuarios</button>
+                <button class="tab" data-nav="perfil">Mi Perfil</button>
+            </div>
+
+            <div id="nav-actions"></div>
+        </nav>
+
+        <div id="toast-container"></div>
+
+        <!-- ===== LOGIN ===== -->
+        <div id="page-login" class="page">
+            <div class="login-box">
+                <h2>Sistema de Votación </h2>
+
+                <div class="tabs">
+                    <button class="tab active" id="tab-login" onclick="switchLoginTab('login')">Iniciar sesión</button>
+                    <button class="tab" id="tab-register" onclick="switchLoginTab('register')">Crear cuenta</button>
+                </div>
+
+                <form id="form-login">
+                    <div class="form-group">
+                        <label for="login-username">Usuario</label>
+                        <input id="login-username" type="text" placeholder="Nombre de usuario" required minlength="6"
+                            maxlength="32" autocomplete="username" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label for="login-password">Contraseña</label>
+                        <input id="login-password" type="password" placeholder="Contraseña" required minlength="8"
+                            maxlength="128" autocomplete="current-password" />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+                </form>
+
+                <form id="form-register" style="display:none;">
+                    <div class="form-group">
+                        <label for="reg-username">Usuario</label>
+                        <input id="reg-username" type="text" placeholder="6–32 caracteres" required minlength="6"
+                            maxlength="32" autocomplete="username" />
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Contraseña</label>
+                        <input id="reg-password" type="password" placeholder="Mínimo 8 caracteres" required
+                            minlength="8" maxlength="128" autocomplete="new-password" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label for="reg-password2">Repetir contraseña</label>
+                        <input id="reg-password2" type="password" placeholder="Repite la contraseña" required
+                            minlength="8" autocomplete="new-password" />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Crear cuenta</button>
+                </form>
+
+                <hr class="divider" />
+                <button class="btn btn-ghost btn-full" onclick="demoLogin()" id="btn-demo">
+                    &nbsp;Acceso de demostración
+                </button>
+                <p style="text-align:center; font-size:.75rem; color:#9ca3af; margin-top:.5rem;">
+                    Usuario: <strong>UsuarioDemo</strong> · ID: 1
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== GALAS ===== -->
+        <div id="page-galas" class="page">
+            <div class="container">
+                <div class="flex-between">
+                    <span class="section-title" style="margin-bottom:0;">Galas disponibles</span>
+                    <button class="btn btn-ghost btn-sm" onclick="loadGalas()">↺ Actualizar</button>
+                </div>
+                <div class="box" id="galas-list">
+                    <!-- filas inyectadas por JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== VOTAR (detalle gala) ===== -->
+        <div id="page-votar" class="page">
+            <div class="container">
+                <div id="votar-content"></div>
+            </div>
+        </div>
+
+        <!-- ===== USUARIOS ===== -->
+        <div id="page-usuarios" class="page">
+            <div class="container">
+                <div class="flex-between">
+                    <span class="section-title" style="margin-bottom:0;">Usuarios registrados</span>
+                    <button class="btn btn-ghost btn-sm" onclick="loadUsuarios()">↺ Actualizar</button>
+                </div>
+                <div class="box" style="padding:0; overflow:hidden;">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Usuario</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usuarios-tbody">
+                                <tr>
+                                    <td colspan="3" class="loading-state">Cargando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PERFIL ===== -->
+        <div id="page-perfil" class="page">
+            <div class="container">
+                <div class="flex-between">
+                    <div>
+                        <div class="section-title" style="margin-bottom:.15rem;">Mi Perfil</div>
+                        <div style="font-size:.83rem; color:#6b7280;">
+                            Conectado como <strong id="perfil-username">—</strong> ·
+                            <span id="perfil-votos-count">0</span> votos emitidos
+                        </div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="logout()">Cerrar sesión</button>
+                </div>
+
+                <div class="box" style="padding:0; overflow:hidden;">
+                    <div style="padding:.75rem 1rem; border-bottom:1px solid #e5e7eb;">
+                        <strong>Historial de votos</strong>
+                    </div>
+                    <div id="perfil-content" style="padding:1rem;"></div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /#app -->
+
+    <!-- MODAL usuario detalle -->
+    <div id="modal-usuario" class="modal-overlay" onclick="if(event.target===this) closeUsuarioModal()">
+        <div class="modal">
+            <button class="modal-close" onclick="closeUsuarioModal()">✕</button>
+            <div id="modal-usuario-content"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
