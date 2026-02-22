@@ -5,11 +5,11 @@ namespace Backend.Contracts.Requests;
 public class CrearVotoRequest
 {
     [Required]
-    public required int IdUsuario { get; set; }
+    public required int IdUsuario { get; init; }
 
     [Required]
-    public required int IdCandidato { get; set; }
+    public required int IdCandidato { get; init; }
 
     [Required]
-    public required int IdGala { get; set; }
+    public required int IdGala { get; init; }
 }

@@ -1,4 +1,5 @@
 using System.Text;
+using Backend.Auth;
 using Backend.Endpoints;
 using Backend.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -27,11 +28,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
+builder.Services.AddScoped<JwtTokenProvider>();
+builder.Services.AddScoped<PasswordHasher>();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(builder.Configuration["Cors:Frontend"]!);
+        policy.WithOrigins(builder.Configuration["Cors:Frontend"]!)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 

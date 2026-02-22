@@ -16,7 +16,7 @@ public static class VotingEndpoints
             .RequireAuthorization()
             .WithName("GetUsuarios");
         
-        app.MapGet("usuarios/{id}", GetUsuario)
+        app.MapGet("usuarios/{id:int}", GetUsuario)
             .Produces<GetUsuarioResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden)
@@ -40,7 +40,7 @@ public static class VotingEndpoints
             .RequireAuthorization()
             .WithName("GetGalas");
 
-        app.MapGet("galas/{id}", GetGala)
+        app.MapGet("galas/{id:int}", GetGala)
             .Produces<GetGalaResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden)
@@ -58,7 +58,7 @@ public static class VotingEndpoints
         });
     }
 
-    public static async Task<IResult> GetUsuario([FromRoute] string id , CancellationToken cancellationToken)
+    public static async Task<IResult> GetUsuario([FromRoute] int id , CancellationToken cancellationToken)
     {
         return TypedResults.Ok(new GetUsuarioResponse 
         { 
@@ -81,7 +81,7 @@ public static class VotingEndpoints
         });
     }
 
-    public static async Task<IResult> GetGala([FromRoute] string id, CancellationToken cancellationToken)
+    public static async Task<IResult> GetGala([FromRoute] int id, CancellationToken cancellationToken)
     {
         return TypedResults.Ok(new GetGalaResponse
         {

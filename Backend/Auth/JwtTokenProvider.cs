@@ -22,7 +22,7 @@ public class JwtTokenProvider(IOptions<JwtOptions> jwtOptions)
         {
             Subject = new ClaimsIdentity([
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()!),
+                new(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
                 new(JwtRegisteredClaimNames.Name, usuario.Username)
             ]),
             SigningCredentials = credentials,

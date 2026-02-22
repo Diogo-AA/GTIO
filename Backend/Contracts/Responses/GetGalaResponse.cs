@@ -2,15 +2,15 @@ namespace Backend.Contracts.Responses;
 
 public class GetGalaResponse
 {
-    public required int Id { get; set; }
-    public required string Nombre { get; set; }
-    public required DateTime Fecha { get; set; }
-    public required List<GetGalaResponseCandidato> Candidatos { get; set; }
+    public required int Id { get; init; }
+    public required string Nombre { get; init; }
+    public required DateTime Fecha { get; init; }
+    public required List<GetGalaResponseCandidato> Candidatos { get; init; }
 }
 
 public class GetGalaResponseCandidato
 {
-    public required int Id { get; set; }
-    public required string Nombre { get; set; }
-    public required int NumVotos { get; set; }
+    public required int Id { get; init; }
+    public required string Nombre { get; init; }
+    public required int NumVotos { get; init; }
 }
