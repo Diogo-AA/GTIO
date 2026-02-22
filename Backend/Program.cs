@@ -62,7 +62,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddValidation();
 
-builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Db:ConnString")!);
+builder.Services.AddMySqlDataSource(builder.Configuration["Db:ConnString"]!);
 
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IGalaRepository, GalaRepository>();

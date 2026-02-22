@@ -4,7 +4,7 @@ public class GetUsuarioResponse
 {
     public required int Id { get; init; }
     public required string Username { get; init; }
-    public required List<GetUsuarioResponseVoto> Votos { get; init; }
+    public List<GetUsuarioResponseVoto> Votos { get; set; } = [];
 }
 
 public class GetUsuarioResponseVoto

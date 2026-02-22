@@ -42,13 +42,6 @@ public class GalaRepository : IGalaRepository
                 if (!galaDictionary.TryGetValue(gala.Id, out var currentGala))
                 {
                     currentGala = gala;
-                    currentGala = new GetGalaResponse
-                    {
-                        Id = gala.Id,
-                        Nombre = gala.Nombre,
-                        Fecha = gala.Fecha,
-                        Candidatos = []
-                    };
                     galaDictionary.Add(currentGala.Id, currentGala);
                 }
 
@@ -94,13 +87,7 @@ public class GalaRepository : IGalaRepository
             {
                 if (!galaDictionary.TryGetValue(gala.Id, out var currentGala))
                 {
-                    currentGala = new GetGalaResponse
-                    {
-                        Id = gala.Id,
-                        Nombre = gala.Nombre,
-                        Fecha = gala.Fecha,
-                        Candidatos = []
-                    };
+                    currentGala = gala;
                     galaDictionary.Add(currentGala.Id, currentGala);
                 }
 
