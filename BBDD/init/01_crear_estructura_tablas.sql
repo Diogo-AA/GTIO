@@ -1,10 +1,9 @@
 CREATE DATABASE IF NOT EXISTS votacion_db;
 USE votacion_db;
 
--- Usuarios
 CREATE TABLE IF NOT EXISTS usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(100) NOT NULL,
+  nombre VARCHAR(100) NOT NULL UNIQUE,
   passwd VARCHAR(255) NOT NULL
 );
 
