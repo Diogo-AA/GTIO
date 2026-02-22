@@ -8,8 +8,24 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-Development}
       - ASPNETCORE_URLS=http://+:${PUERTO_API-8080}
+      - Db__ConnString=server=bbdd_votacion_mysql;port=${PUERTO_MYSQL-3306};uid=user;pwd=pass;database=votacion_db;
     env_file:
       - path: .env
         required: false
     volumes:
       - ~/.aspnet/https:/https:ro
+      
+  base_datos:
+    image: mysql:8.4
+    container_name: bbdd_votacion_mysql
+    restart: unless-stopped
+    env_file:
+      - BBDD/.env
+    ports:
+      - "${PUERTO_MYSQL-3306}:3306"
+    volumes:
+      - datos_mysql:/var/lib/mysql
+      - ./BBDD/init:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  datos_mysql:
