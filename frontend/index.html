@@ -15,9 +15,8 @@
 
     <div id="app">
 
-        <!-- NAV -->
         <nav>
-            <div class="nav-brand">🎤 OT Voting</div>
+            <div class="nav-brand">OT Voting</div>
 
             <div class="nav-links" id="nav-links" style="display:none;">
                 <button class="tab" data-nav="galas">Galas</button>
@@ -30,13 +29,12 @@
 
         <div id="toast-container"></div>
 
-        <!-- ===== LOGIN ===== -->
         <div id="page-login" class="page">
             <div class="login-box">
-                <h2>Sistema de Votación </h2>
+                <h2>Sistema de Votacion</h2>
 
                 <div class="tabs">
-                    <button class="tab active" id="tab-login" onclick="switchLoginTab('login')">Iniciar sesión</button>
+                    <button class="tab active" id="tab-login" onclick="switchLoginTab('login')">Iniciar sesion</button>
                     <button class="tab" id="tab-register" onclick="switchLoginTab('register')">Crear cuenta</button>
                 </div>
 
@@ -75,7 +73,7 @@
 
                 <hr class="divider" />
                 <button class="btn btn-ghost btn-full" onclick="demoLogin()" id="btn-demo">
-                    &nbsp;Acceso de demostración
+                    Acceso de demostracion
                 </button>
                 <p style="text-align:center; font-size:.75rem; color:#9ca3af; margin-top:.5rem;">
                     Usuario: <strong>UsuarioDemo</strong> · ID: 1
@@ -83,7 +81,6 @@
             </div>
         </div>
 
-        <!-- ===== GALAS ===== -->
         <div id="page-galas" class="page">
             <div class="container">
                 <div class="flex-between">
@@ -91,19 +88,16 @@
                     <button class="btn btn-ghost btn-sm" onclick="loadGalas()">↺ Actualizar</button>
                 </div>
                 <div class="box" id="galas-list">
-                    <!-- filas inyectadas por JS -->
                 </div>
             </div>
         </div>
 
-        <!-- ===== VOTAR (detalle gala) ===== -->
         <div id="page-votar" class="page">
             <div class="container">
                 <div id="votar-content"></div>
             </div>
         </div>
 
-        <!-- ===== USUARIOS ===== -->
         <div id="page-usuarios" class="page">
             <div class="container">
                 <div class="flex-between">
@@ -131,7 +125,6 @@
             </div>
         </div>
 
-        <!-- ===== PERFIL ===== -->
         <div id="page-perfil" class="page">
             <div class="container">
                 <div class="flex-between">
@@ -142,7 +135,7 @@
                             <span id="perfil-votos-count">0</span> votos emitidos
                         </div>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="logout()">Cerrar sesión</button>
+                    <button class="btn btn-danger btn-sm" onclick="logout()">Cerrar sesion</button>
                 </div>
 
                 <div class="box" style="padding:0; overflow:hidden;">
@@ -154,9 +147,8 @@
             </div>
         </div>
 
-    </div><!-- /#app -->
+    </div>
 
-    <!-- MODAL usuario detalle -->
     <div id="modal-usuario" class="modal-overlay" onclick="if(event.target===this) closeUsuarioModal()">
         <div class="modal">
             <button class="modal-close" onclick="closeUsuarioModal()">✕</button>

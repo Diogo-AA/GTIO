@@ -1,36 +1,19 @@
-/**
- * OT Voting System – Frontend SPA
- * DevCrew | Bermejo Inc.
- *
- * Endpoints consumidos:
- *   GET  /galas            → lista de galas
- *   GET  /galas/{id}       → detalle gala con candidatos y votos
- *   GET  /usuarios         → lista de usuarios (admin)
- *   GET  /usuarios/{id}    → detalle usuario con historial de votos
- *   POST /votos            → crear un voto { idUsuario, idCandidato, idGala }
- *   POST /login            → autenticación  { username, password }
- *   POST /register         → registro       { username, password }
- */
-
 'use strict';
 
-// ---- Config ----
-// Cambiar por la URL real del backend cuando esté desplegado
-const API_BASE = 'http://localhost:5000';
+const API_BASE = 'http://localhost:8080';
 
-// ---- Estado ----
 const state = {
   token: localStorage.getItem('ot_token') || null,
   user: JSON.parse(localStorage.getItem('ot_user') || 'null'),
   currentGala: null,
-  currentCandidatoId: null,
 };
 
-// ---- Helpers API ----
 async function apiFetch(path, options = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
+
   const res = await fetch(`${API_BASE}/${path}`, { ...options, headers });
+
   if (!res.ok) {
     let msg = `Error ${res.status}`;
     try { const e = await res.json(); msg = e.title || e.message || msg; } catch { }
@@ -40,14 +23,27 @@ async function apiFetch(path, options = {}) {
   return res.json();
 }
 
-// ---- Toast ----
-let toastTimer = null;
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
+
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
-  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
-  toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><span class="toast-msg">${message}</span>`;
+  toast.innerHTML = `<span class="toast-msg">${message}</span>`;
   container.appendChild(toast);
   setTimeout(() => {
     toast.classList.add('hiding');
@@ -55,19 +51,16 @@ function showToast(message, type = 'info') {
   }, 3800);
 }
 
-// ---- Navigation ----
 function navigate(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`page-${page}`);
   if (target) target.classList.add('active');
 
-  // update nav active state
   document.querySelectorAll('[data-nav]').forEach(el => {
     el.classList.toggle('active', el.dataset.nav === page);
   });
 }
 
-// ---- Auth ----
 function setSession(token, user) {
   state.token = token;
   state.user = user;
@@ -83,27 +76,30 @@ function clearSession() {
   localStorage.removeItem('ot_user');
 }
 
-// Expose for HTML use
 window.logout = function () {
   clearSession();
   renderNav();
   navigate('login');
-  showToast('Sesión cerrada correctamente', 'info');
+  showToast('Sesion cerrada correctamente', 'info');
 };
 
 async function handleLogin(username, password) {
   try {
-    // Si el backend de auth no está aún conectado, simulamos localmente
-    const data = await apiFetch('login', {
+    const data = await apiFetch('auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     });
-    // data puede ser { token, id, username } según LoginResponse
-    setSession(data.token, { id: data.id, username: data.username || username });
+
+    const token = data.accessToken;
+    const claims = parseJwt(token);
+    const userId = claims?.sub ? parseInt(claims.sub, 10) : null;
+    const userName = claims?.name || username;
+
+    setSession(token, { id: userId, username: userName });
     renderNav();
     navigate('galas');
     loadGalas();
-    showToast(`Bienvenido, ${state.user.username}! 👋`, 'success');
+    showToast(`Bienvenido, ${state.user.username}`, 'success');
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -111,29 +107,24 @@ async function handleLogin(username, password) {
 
 async function handleRegister(username, password) {
   try {
-    await apiFetch('register', {
+    await apiFetch('auth/register', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     });
-    showToast('Cuenta creada. Ahora inicia sesión.', 'success');
+    showToast('Cuenta creada. Ahora inicia sesion.', 'success');
     switchLoginTab('login');
   } catch (err) {
     showToast(err.message, 'error');
   }
 }
 
-// ---- Demo Login (sin backend) ----
-// Simula el usuario seed de la base de datos:
-//   nombre: 'Usuario Demo'  |  id: 1
 window.demoLogin = function () {
-  // Token ficticio para que las cabeceras Authorization se envíen igualmente
   setSession('demo-token', { id: 1, username: 'UsuarioDemo' });
   navigate('galas');
   loadGalas();
-  showToast('🧪 Modo demo activado — usuario: UsuarioDemo', 'info');
+  showToast('Modo demo activado', 'info');
 };
 
-// ---- Render Nav ----
 function renderNav() {
   const navActions = document.getElementById('nav-actions');
   const navLinks = document.getElementById('nav-links');
@@ -152,13 +143,12 @@ function renderNav() {
   } else {
     navActions.innerHTML = `
       <span class="estado-chip offline">Estado: Desconectado</span>
-      <button class="btn btn-primary btn-sm" onclick="navigate('login')">Iniciar Sesión</button>
+      <button class="btn btn-primary btn-sm" onclick="navigate('login')">Iniciar Sesion</button>
     `;
     navLinks.style.display = 'none';
   }
 }
 
-// ---- Login page tab switcher ----
 function switchLoginTab(tab) {
   document.getElementById('tab-login').classList.toggle('active', tab === 'login');
   document.getElementById('tab-register').classList.toggle('active', tab === 'register');
@@ -167,20 +157,18 @@ function switchLoginTab(tab) {
 }
 window.switchLoginTab = switchLoginTab;
 
-// ---- Galas ----
 async function loadGalas() {
   const container = document.getElementById('galas-list');
   container.innerHTML = loadingHTML('Cargando galas...');
   try {
-    const data = await apiFetch('galas');           // { galas: [...] }
+    const data = await apiFetch('galas');
     const galas = data.galas ?? data;
     if (!galas.length) {
-      container.innerHTML = emptyStateHTML('🎤', 'Sin galas', 'Todavía no hay galas disponibles.');
+      container.innerHTML = emptyStateHTML('Sin galas', 'Todavia no hay galas disponibles.');
       return;
     }
     container.innerHTML = '';
     galas.forEach(g => container.appendChild(buildGalaCard(g)));
-    // quitar borde del último
     const rows = container.querySelectorAll('.gala-row:last-child');
     rows.forEach(r => r.style.borderBottom = 'none');
   } catch (err) {
@@ -193,17 +181,17 @@ function buildGalaCard(gala) {
   const card = document.createElement('div');
   card.className = 'card gala-card';
   card.setAttribute('onclick', `openGala(${gala.id})`);
-  const fecha = gala.fecha ? new Date(gala.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+  const fecha = gala.fecha ? new Date(gala.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
   const totalVotos = (gala.candidatos || []).reduce((s, c) => s + (c.numVotos || 0), 0);
   card.innerHTML = `
-    <div class="gala-name">🎤 ${gala.nombre}</div>
+    <div class="gala-name">${gala.nombre}</div>
     <div class="gala-meta">
-      <span>📅 ${fecha}</span>
+      <span>${fecha}</span>
       <span class="badge badge-dim">${(gala.candidatos || []).length} candidatos</span>
     </div>
     <div class="gala-footer">
-      <span class="badge badge-violet">🗳️ ${totalVotos} votos</span>
-      <span style="color:var(--text-muted);font-size:.82rem">Ver detalle →</span>
+      <span class="badge badge-violet">${totalVotos} votos</span>
+      <span style="color:var(--text-muted);font-size:.82rem">Ver detalle</span>
     </div>
   `;
   return card;
@@ -220,7 +208,6 @@ async function loadGalaDetalle(id) {
   try {
     const gala = await apiFetch(`galas/${id}`);
     state.currentGala = gala;
-    state.currentCandidatoId = null;
     renderGalaDetalle(gala);
   } catch (err) {
     container.innerHTML = errorStateHTML(err.message);
@@ -232,15 +219,15 @@ function renderGalaDetalle(gala) {
   const container = document.getElementById('votar-content');
   const fecha = gala.fecha
     ? new Date(gala.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-    : '—';
+    : '';
   const totalVotos = (gala.candidatos || []).reduce((s, c) => s + (c.numVotos || 0), 0);
 
   container.innerHTML = `
     <div class="flex-between" style="margin-bottom:.75rem;">
       <div>
-        <button class="btn btn-ghost btn-sm" onclick="navigate('galas');loadGalas()" style="margin-bottom:.5rem;">← Galas</button>
+        <button class="btn btn-ghost btn-sm" onclick="navigate('galas');loadGalas()" style="margin-bottom:.5rem;">Galas</button>
         <div class="section-title" style="margin-bottom:.15rem;">${gala.nombre}</div>
-        <div style="font-size:.8rem;color:#6b7280;">${fecha} · ${(gala.candidatos || []).length} candidatos · ${totalVotos} votos totales</div>
+        <div style="font-size:.8rem;color:#6b7280;">${fecha} - ${(gala.candidatos || []).length} candidatos - ${totalVotos} votos totales</div>
       </div>
     </div>
 
@@ -270,19 +257,14 @@ function renderCandidatos(candidatos, totalVotos) {
       <div class="candidato-foto">Foto</div>
       <div class="candidato-nombre">${c.nombre}</div>
       <div style="flex:1; min-width:80px;">
-        <div class="candidato-votos-label">${c.numVotos} votos · ${pct}%</div>
+        <div class="candidato-votos-label">${c.numVotos} votos - ${pct}%</div>
         <div class="progress-bg"><div class="progress-fill" style="width:${pct}%"></div></div>
       </div>
       <button class="btn btn-primary btn-sm" id="btn-votar-${c.id}" onclick="submitVotoDirecto(${c.id})">Votar</button>
     `;
-    // last row: no bottom border
     if (idx === candidatos.length - 1) row.style.borderBottom = 'none';
     list.appendChild(row);
   });
-}
-
-function selectCandidato(id) {
-  state.currentCandidatoId = id;
 }
 
 function renderResultados(candidatos, totalVotos) {
@@ -307,7 +289,6 @@ function renderResultados(candidatos, totalVotos) {
   }).join('');
 }
 
-// ---- Submit Voto (direct from row button) ----
 window.submitVotoDirecto = async function (candidatoId) {
   if (!state.user) { navigate('login'); return; }
   if (!state.currentGala) return;
@@ -324,7 +305,7 @@ window.submitVotoDirecto = async function (candidatoId) {
         idGala: state.currentGala.id,
       }),
     });
-    showToast('¡Voto registrado! 🎉', 'success');
+    showToast('Voto registrado', 'success');
     await loadGalaDetalle(state.currentGala.id);
   } catch (err) {
     showToast(err.message, 'error');
@@ -332,10 +313,6 @@ window.submitVotoDirecto = async function (candidatoId) {
   }
 };
 
-// alias por compatibilidad
-window.submitVoto = window.submitVotoDirecto;
-
-// ---- Usuarios (panel) ----
 async function loadUsuarios() {
   const tbody = document.getElementById('usuarios-tbody');
   tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:1.5rem;">${loadingHTML('Cargando usuarios...')}</td></tr>`;
@@ -377,8 +354,8 @@ async function loadUsuarioDetalle(id) {
     const u = await apiFetch(`usuarios/${id}`);
     const votos = u.votos || [];
     content.innerHTML = `
-      <h3 style="margin-bottom:.25rem;">👤 ${u.username}</h3>
-      <p style="color:#6b7280;font-size:.85rem;margin-bottom:1rem;">ID: ${u.id} · ${votos.length} votos emitidos</p>
+      <h3 style="margin-bottom:.25rem;">${u.username}</h3>
+      <p style="color:#6b7280;font-size:.85rem;margin-bottom:1rem;">ID: ${u.id} - ${votos.length} votos emitidos</p>
       ${votos.length ? `
         <div class="table-wrap">
           <table>
@@ -386,22 +363,21 @@ async function loadUsuarioDetalle(id) {
             <tbody>
               ${votos.map(v => `
                 <tr>
-                  <td>${v.gala?.nombre || v.gala?.id || '—'}</td>
-                  <td>${v.candidato?.nombre || v.candidato?.id || '—'}</td>
-                  <td>${v.fecha ? new Date(v.fecha).toLocaleDateString('es-ES') : '—'}</td>
+                  <td>${v.gala?.nombre || v.gala?.id || ''}</td>
+                  <td>${v.candidato?.nombre || v.candidato?.id || ''}</td>
+                  <td>${v.fecha ? new Date(v.fecha).toLocaleDateString('es-ES') : ''}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
         </div>
-      ` : '<p style="color:#6b7280">Este usuario aún no ha votado.</p>'}
+      ` : '<p style="color:#6b7280">Este usuario aun no ha votado.</p>'}
     `;
   } catch (err) {
     content.innerHTML = `<p style="color:#dc2626">${err.message}</p>`;
   }
 }
 
-// ---- Mi perfil ----
 async function loadMiPerfil() {
   if (!state.user) return;
   const content = document.getElementById('perfil-content');
@@ -418,36 +394,35 @@ async function loadMiPerfil() {
           <tbody>
             ${votos.map(v => `
               <tr>
-                <td>${v.gala?.nombre || '—'}</td>
-                <td>${v.candidato?.nombre || '—'}</td>
-                <td>${v.fecha ? new Date(v.fecha).toLocaleDateString('es-ES') : '—'}</td>
+                <td>${v.gala?.nombre || ''}</td>
+                <td>${v.candidato?.nombre || ''}</td>
+                <td>${v.fecha ? new Date(v.fecha).toLocaleDateString('es-ES') : ''}</td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       </div>
-    ` : '<div class="empty-state"><div class="empty-icon">🗳️</div><h3>Sin votos todavía</h3><p>¡Aún no has votado en ninguna gala!</p></div>';
+    ` : '<div class="empty-state"><h3>Sin votos todavia</h3><p>Aun no has votado en ninguna gala.</p></div>';
   } catch (err) {
     content.innerHTML = `<p style="color:var(--danger)">${err.message}</p>`;
   }
 }
 
-// ---- Helpers render ----
-function loadingHTML(msg = 'Cargando...') {
-  return `<div class="loading-state"><div class="spinner"></div><p>${msg}</p></div>`;
-}
-function emptyStateHTML(icon, title, msg) {
-  return `<div class="empty-state"><div class="empty-icon">${icon}</div><h3>${title}</h3><p>${msg}</p></div>`;
-}
-function errorStateHTML(msg) {
-  return `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Error</h3><p style="color:var(--danger)">${msg}</p></div>`;
+function loadingHTML(msg) {
+  return `<div class="loading-state"><div class="spinner"></div><p>${msg || 'Cargando...'}</p></div>`;
 }
 
-// ---- Init ----
+function emptyStateHTML(title, msg) {
+  return `<div class="empty-state"><h3>${title}</h3><p>${msg}</p></div>`;
+}
+
+function errorStateHTML(msg) {
+  return `<div class="empty-state"><h3>Error</h3><p style="color:var(--danger)">${msg}</p></div>`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   renderNav();
 
-  // decide start page
   if (state.user && state.token) {
     navigate('galas');
     loadGalas();
@@ -455,7 +430,6 @@ document.addEventListener('DOMContentLoaded', () => {
     navigate('login');
   }
 
-  // Login form
   document.getElementById('form-login').addEventListener('submit', async e => {
     e.preventDefault();
     const username = document.getElementById('login-username').value.trim();
@@ -463,19 +437,17 @@ document.addEventListener('DOMContentLoaded', () => {
     await handleLogin(username, password);
   });
 
-  // Register form
   document.getElementById('form-register').addEventListener('submit', async e => {
     e.preventDefault();
     const username = document.getElementById('reg-username').value.trim();
     const password = document.getElementById('reg-password').value;
     if (password !== document.getElementById('reg-password2').value) {
-      showToast('Las contraseñas no coinciden', 'error');
+      showToast('Las contrasenas no coinciden', 'error');
       return;
     }
     await handleRegister(username, password);
   });
 
-  // Nav link wiring
   document.querySelectorAll('[data-nav]').forEach(el => {
     el.addEventListener('click', () => {
       const page = el.dataset.nav;
@@ -487,7 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Export for HTML
 window.navigate = navigate;
 window.loadGalas = loadGalas;
 window.loadUsuarios = loadUsuarios;
