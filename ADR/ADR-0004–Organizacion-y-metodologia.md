@@ -35,37 +35,30 @@ El problema a resolver es:
 
 ## Opciones Consideradas
 
-* **Metodología en Cascada (Waterfall):** Fases secuenciales rígidas.
-* **Kanban:** Flujo continuo de trabajo sin iteraciones fijas.
-* **Scrum (Framework Ágil):** Trabajo iterativo con equipo multidisciplinar.
+* **Scrum Completo:** Demasiado rígido (requiere iteraciones cerradas, dailies y roles estrictos).
+* **Cascada (Waterfall):** Inviable por los cambios constantes del entorno televisivo.
+* **Metodología Ágil Híbrida + Cultura DevOps:** Adaptar conceptos ágiles según la necesidad real.
 
 ---
 
 ## Decisión
 
-Opción elegida: **"Scrum "**, porque:
+Opción elegida: **"Metodología Híbrida inspirada en marcos Ágiles y DevOps "**, porque:
 
-- Permite realizar entregas funcionales cada 2 semanas, validando la arquitectura constantemente.
-- Fomenta un Equipo Multidisciplinar (Cross-Functional Squad) donde no hay silos entre desarrollo y sistemas.
-- Implementa la filosofía, haciendo al equipo responsable de su código en producción.
-- Facilita la gestión de cambios entre galas sin romper la planificación anual.
-- Garantiza que la infraestructura (Dockerfiles, Compose) se trate como código (**IaC**).
+- **Flexibilidad:** Se adoptan ideas de agilidad (como el uso de tableros y priorización) pero sin la obligación de realizar iteraciones (Sprints) fijas o reuniones diarias (Dailies).
+- **Responsabilidad Compartida:** No se asignan roles estáticos; el equipo opera de forma multidisciplinar donde cualquiera puede intervenir en el desarrollo o la infraestructura.
+- **Cultura DevOps:** Se prioriza que el software sea siempre "desplegable" mediante Docker, tratando la configuración como parte del código.
+- **Comunicación Asíncrona:** Se favorece el flujo de información continuo sobre las ceremonias formales.
 
 ---
 
-## Estructura Operativa
+## Organización del Trabajo
 
-Para la implementación de esta decisión, el equipo se organiza bajo los siguientes pilares:
+Para mantener el orden sin añadir sobrecarga, el equipo se basa en:
 
-### 1. Roles del Equipo
-* **Product Owner:** Prioriza el Product Backlog según el valor de negocio.
-* **Scrum Master:** Facilita ceremonias y elimina impedimentos.
-* **Equipo de Desarrollo (Dev & Ops):** Responsabilidad compartida en microservicios, Docker y monitorización.
-
-### 2. Ceremonias (Ciclos de 2 semanas)
-* **Sprint Planning:** Selección de tareas en GitHub Projects.
-* **Sprint Review:** Demo del incremento de software al cliente.
-* **Sprint Retrospective:** Análisis de mejora continua de procesos.
+1. **Gestión por Tablero:** Uso de GitHub Projects para visualizar el estado de las tareas (Backlog, En progreso, Hecho).
+2. **Infraestructura como Código:** El despliegue no es una fase aparte; los Dockerfiles y el Compose se desarrollan junto con la lógica de negocio.
+3. **Colaboración Directa:** Resolución de dudas y coordinación mediante canales ágiles (Discord/WhatsApp) en lugar de reuniones programadas.
 
 ---
 
@@ -73,36 +66,29 @@ Para la implementación de esta decisión, el equipo se organiza bajo los siguie
 
 ### Positivas
 
-* **Visibilidad constante:** El cliente valida progreso real cada quincena.
-* **Calidad integrada:** Las configuraciones de Docker se prueban desde el inicio del desarrollo.
-* **Respuesta rápida (MTTR):** Reducción del tiempo de resolución al ser el mismo equipo quien desarrolla y opera.
-* **Mitigación del "Factor Bus":** Conocimiento compartido que asegura el mantenimiento a 10 años.
+* **Baja fricción:** Menos tiempo dedicado a reuniones y procesos, más tiempo para el desarrollo técnico.
+* **Adaptabilidad:** Permite pivotar tareas rápidamente si surgen problemas técnicos o cambios en el RFI.
+* **Autonomía:** Los miembros del equipo tienen libertad para organizarse según su disponibilidad y carga técnica.
 
 ### Negativas
 
-* **Sobrecarga de gestión:** Las ceremonias de Scrum requieren tiempo y disciplina estricta.
-* **Curva de aprendizaje:** Exige que los desarrolladores dominen conceptos de operaciones (Docker) y viceversa.
+* **Riesgo de desincronización:** Al no haber reuniones fijas (Dailies), requiere que la comunicación por Discord sea constante y clara.
+* **Dependencia de la proactividad:** Exige que cada miembro actualice el estado de sus tareas de forma voluntaria.
 
 ---
 
 ## Ventajas y Desventajas de las opciones
 
-### Scrum + Cultura DevOps
+### Metodología Híbrida (Elegida)
 
-* **Positivo**, porque se alinea con la necesidad de entregas frecuentes y alta estabilidad.
-* **Positivo**, porque elimina cuellos de botella entre departamentos.
-* **Negativo**, porque requiere una alta madurez técnica y colaborativa del equipo.
+* **Positivo**, porque se adapta al ritmo real de trabajo del equipo.
+* **Positivo**, porque reduce la burocracia de gestión.
+* **Negativo**, porque requiere mayor disciplina individual para mantener la trazabilidad.
 
-### Metodología en Cascada (Waterfall)
+### Scrum (Framework completo)
 
-* **Positivo**, por su predictibilidad en entornos estáticos.
-* **Negativo**, porque es demasiado rígida para el entorno cambiante de la televisión.
-* **Negativo**, porque aumenta el riesgo de fallos críticos en el despliegue final.
-
-### Kanban
-
-* **Positivo**, porque es excelente para la gestión de mantenimiento y soporte.
-* **Negativo**, porque carece de los hitos temporales (Sprints) necesarios para las fechas estrictas de las galas.
+* **Positivo**, por el control exhaustivo del tiempo.
+* **Negativo**, porque las iteraciones y roles fijos no encajan con la dinámica actual del equipo.
 
 ---
 
