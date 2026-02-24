@@ -9,7 +9,7 @@ Este proyecto es un sistema de votación estructurado en tres capas:
 
 ## Prerrequisitos
 
-Para ejecutar este proytecto es necesario tener instalado:
+Para ejecutar este proyecto es necesario tener instalado:
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
