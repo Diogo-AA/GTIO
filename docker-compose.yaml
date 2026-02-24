@@ -1,4 +1,13 @@
 services:
+  frontend:
+      build:
+        context: frontend/
+        dockerfile: Dockerfile
+      ports:
+        - "5500:80"
+      depends_on:
+        - backend
+
   backend:
     build:
       context: Backend/
@@ -14,6 +23,8 @@ services:
         required: false
     volumes:
       - ~/.aspnet/https:/https:ro
+    depends_on:
+      - base_datos
       
   base_datos:
     image: mysql:8.4
