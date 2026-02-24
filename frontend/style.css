@@ -1,0 +1,588 @@
+/* ========================================
+   OT Voting System – Estilos simples
+   DevCrew | Bermejo Inc.
+   ======================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --blue: #2563eb;
+  --blue-hover: #1d4ed8;
+  --blue-light: #eff6ff;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-400: #9ca3af;
+  --gray-600: #4b5563;
+  --gray-800: #1f2937;
+  --red: #dc2626;
+  --green: #16a34a;
+  --white: #ffffff;
+  --border: #d1d5db;
+  --radius: 6px;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--gray-100);
+  color: var(--gray-800);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ---- Nav ---- */
+nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: .75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.nav-brand {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: .25rem;
+}
+
+#nav-actions {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+/* Estado chip */
+.estado-chip {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--green);
+}
+
+.estado-chip.offline {
+  color: var(--gray-400);
+}
+
+/* ---- Buttons ---- */
+.btn {
+  font-family: 'Inter', sans-serif;
+  font-size: .85rem;
+  font-weight: 600;
+  padding: .4rem .9rem;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.btn-primary {
+  background: var(--blue);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: var(--blue-hover);
+}
+
+.btn-primary:disabled {
+  background: var(--gray-400);
+  cursor: default;
+}
+
+.btn-ghost {
+  background: var(--white);
+  color: var(--gray-600);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover {
+  background: var(--gray-100);
+}
+
+.btn-danger {
+  background: var(--white);
+  color: var(--red);
+  border: 1px solid var(--red);
+}
+
+.btn-danger:hover {
+  background: #fee2e2;
+}
+
+.btn-sm {
+  padding: .3rem .7rem;
+  font-size: .8rem;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Nav tab buttons */
+.tab {
+  background: none;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: .85rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  padding: .4rem .85rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.tab:hover {
+  background: var(--gray-100);
+}
+
+.tab.active {
+  background: var(--blue-light);
+  color: var(--blue);
+  font-weight: 600;
+}
+
+/* ---- Layout ---- */
+#app {
+  min-height: 100vh;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.container {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+/* ---- White box / card ---- */
+.box {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* ---- Section header ---- */
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--gray-800);
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+/* ---- Login ---- */
+#page-login {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 55px);
+  padding: 2rem 1rem;
+}
+
+#page-login.active {
+  display: flex;
+}
+
+.login-box {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-box h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+
+/* ---- Forms ---- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  margin-bottom: .85rem;
+}
+
+.form-group label {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.form-group input {
+  font-family: 'Inter', sans-serif;
+  font-size: .9rem;
+  padding: .5rem .75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  width: 100%;
+  background: var(--white);
+  color: var(--gray-800);
+}
+
+.form-group input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, .15);
+}
+
+.tabs {
+  display: flex;
+  gap: .25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: .5rem;
+}
+
+/* ---- Candidatos list ---- */
+.candidato-row {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  padding: .65rem 0;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.candidato-row:last-child {
+  border-bottom: none;
+}
+
+.candidato-foto {
+  width: 52px;
+  height: 52px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  color: var(--gray-600);
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.candidato-nombre {
+  flex: 1;
+  font-weight: 600;
+  font-size: .95rem;
+}
+
+.candidato-votos-label {
+  font-size: .8rem;
+  color: var(--gray-400);
+}
+
+/* Progress bar */
+.progress-bg {
+  background: var(--gray-200);
+  border-radius: 99px;
+  height: 5px;
+  margin-top: .3rem;
+  overflow: hidden;
+  width: 100%;
+  max-width: 160px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 99px;
+  transition: width .5s;
+}
+
+/* Gala card */
+.gala-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem 0;
+  border-bottom: 1px solid var(--gray-200);
+  gap: .75rem;
+}
+
+.gala-row:last-child {
+  border-bottom: none;
+}
+
+.gala-row-info .gala-nombre {
+  font-weight: 600;
+}
+
+.gala-row-info .gala-meta {
+  font-size: .8rem;
+  color: var(--gray-400);
+  margin-top: .1rem;
+}
+
+/* ---- Table ---- */
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .875rem;
+}
+
+th {
+  text-align: left;
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--gray-400);
+  padding: .5rem .75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: .65rem .75rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background: var(--gray-100);
+}
+
+/* ---- Toasts ---- */
+#toast-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.toast {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .75rem 1rem;
+  min-width: 240px;
+  max-width: 320px;
+  font-size: .85rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+  animation: toastIn .25s ease;
+}
+
+.toast.hiding {
+  animation: toastOut .25s ease forwards;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastOut {
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.toast-success {
+  border-left: 4px solid var(--green);
+}
+
+.toast-error {
+  border-left: 4px solid var(--red);
+}
+
+.toast-info {
+  border-left: 4px solid var(--blue);
+}
+
+/* ---- Spinner ---- */
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  margin: 1.5rem auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-state {
+  text-align: center;
+  color: var(--gray-400);
+  font-size: .85rem;
+  padding: 1.5rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--gray-400);
+  font-size: .85rem;
+  padding: 2rem;
+}
+
+/* ---- Badge ---- */
+.badge {
+  display: inline-block;
+  padding: .15rem .5rem;
+  border-radius: 99px;
+  font-size: .73rem;
+  font-weight: 600;
+}
+
+.badge-blue {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+.badge-gray {
+  background: var(--gray-200);
+  color: var(--gray-600);
+}
+
+.badge-green {
+  background: #dcfce7;
+  color: var(--green);
+}
+
+/* ---- Modal ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .35);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+}
+
+.modal-close {
+  position: absolute;
+  top: .75rem;
+  right: .75rem;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--gray-400);
+}
+
+.modal-close:hover {
+  color: var(--gray-800);
+}
+
+.modal h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: .75rem;
+}
+
+/* User chip */
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.user-chip .av {
+  width: 26px;
+  height: 26px;
+  background: var(--blue);
+  color: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+hr.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1rem 0;
+}
+
+@media (max-width: 540px) {
+  nav {
+    padding: .65rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  .container {
+    padding: 1rem .75rem;
+  }
+}

@@ -36,9 +36,11 @@ builder.Services.AddScoped<JwtTokenProvider>();
 
 builder.Services.AddCors(options =>
 {
+    var frontendOrigins = builder.Configuration.GetSection("Cors:Frontend").Get<string[]>() 
+        ?? [builder.Configuration["Cors:Frontend"]!];
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(builder.Configuration["Cors:Frontend"]!)
+        policy.WithOrigins(frontendOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
