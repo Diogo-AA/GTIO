@@ -1,4 +1,4 @@
-# ADR-009 – Organización del Equipo y Metodología de Gestión
+# ADR-004 – Organización del Equipo y Metodología de Gestión
 
 * Estado: Aceptado  
 * Responsables: Jon Arriazu, Diogo Da Cunha, Cristian Meneses  
