@@ -15,7 +15,7 @@ Para ejecutar este proytecto es necesario tener instalado:
 
 ## Despliegue y ejecución
 
-1. Situarse en el directorio raiz del proyecto (donde se encuentra el archivo `docker-compose.yaml`).
+1. Situarse en el directorio raíz del proyecto (donde se encuentra el archivo `docker-compose.yaml`).
 2. Levantar toda la infraestructura ejecutando el siguiente comando:
    ```bash
    docker compose up --build -d
