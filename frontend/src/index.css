@@ -1,7 +1,4 @@
-/* ========================================
-   OT Voting System – Estilos simples
-   DevCrew | Bermejo Inc.
-   ======================================== */
+@import "tailwindcss";
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -35,7 +32,6 @@ body {
   line-height: 1.5;
 }
 
-/* ---- Nav ---- */
 nav {
   background: var(--white);
   border-bottom: 1px solid var(--border);
@@ -66,7 +62,6 @@ nav {
   gap: .5rem;
 }
 
-/* Estado chip */
 .estado-chip {
   font-size: .85rem;
   font-weight: 600;
@@ -77,7 +72,6 @@ nav {
   color: var(--gray-400);
 }
 
-/* ---- Buttons ---- */
 .btn {
   font-family: 'Inter', sans-serif;
   font-size: .85rem;
@@ -132,7 +126,6 @@ nav {
   width: 100%;
 }
 
-/* Nav tab buttons */
 .tab {
   background: none;
   border: none;
@@ -156,26 +149,12 @@ nav {
   font-weight: 600;
 }
 
-/* ---- Layout ---- */
-#app {
-  min-height: 100vh;
-}
-
-.page {
-  display: none;
-}
-
-.page.active {
-  display: block;
-}
-
 .container {
   max-width: 780px;
   margin: 0 auto;
   padding: 1.5rem 1rem;
 }
 
-/* ---- White box / card ---- */
 .box {
   background: var(--white);
   border: 1px solid var(--border);
@@ -184,7 +163,6 @@ nav {
   margin-bottom: 1rem;
 }
 
-/* ---- Section header ---- */
 .section-title {
   font-size: 1.1rem;
   font-weight: 700;
@@ -199,19 +177,6 @@ nav {
   gap: .5rem;
   flex-wrap: wrap;
   margin-bottom: 1rem;
-}
-
-/* ---- Login ---- */
-#page-login {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 55px);
-  padding: 2rem 1rem;
-}
-
-#page-login.active {
-  display: flex;
 }
 
 .login-box {
@@ -229,7 +194,6 @@ nav {
   margin-bottom: 1.25rem;
 }
 
-/* ---- Forms ---- */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -268,7 +232,6 @@ nav {
   padding-bottom: .5rem;
 }
 
-/* ---- Candidatos list ---- */
 .candidato-row {
   display: flex;
   align-items: center;
@@ -306,7 +269,6 @@ nav {
   color: var(--gray-400);
 }
 
-/* Progress bar */
 .progress-bg {
   background: var(--gray-200);
   border-radius: 99px;
@@ -324,7 +286,6 @@ nav {
   transition: width .5s;
 }
 
-/* Gala card */
 .gala-row {
   display: flex;
   align-items: center;
@@ -348,7 +309,6 @@ nav {
   margin-top: .1rem;
 }
 
-/* ---- Table ---- */
 .table-wrap {
   overflow-x: auto;
 }
@@ -383,7 +343,6 @@ tr:hover td {
   background: var(--gray-100);
 }
 
-/* ---- Toasts ---- */
 #toast-container {
   position: fixed;
   bottom: 1rem;
@@ -414,37 +373,18 @@ tr:hover td {
 }
 
 @keyframes toastIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes toastOut {
-  to {
-    opacity: 0;
-    transform: translateY(8px);
-  }
+  to { opacity: 0; transform: translateY(8px); }
 }
 
-.toast-success {
-  border-left: 4px solid var(--green);
-}
+.toast-success { border-left: 4px solid var(--green); }
+.toast-error   { border-left: 4px solid var(--red); }
+.toast-info    { border-left: 4px solid var(--blue); }
 
-.toast-error {
-  border-left: 4px solid var(--red);
-}
-
-.toast-info {
-  border-left: 4px solid var(--blue);
-}
-
-/* ---- Spinner ---- */
 .spinner {
   width: 28px;
   height: 28px;
@@ -456,9 +396,7 @@ tr:hover td {
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .loading-state {
@@ -475,7 +413,6 @@ tr:hover td {
   padding: 2rem;
 }
 
-/* ---- Badge ---- */
 .badge {
   display: inline-block;
   padding: .15rem .5rem;
@@ -484,22 +421,10 @@ tr:hover td {
   font-weight: 600;
 }
 
-.badge-blue {
-  background: var(--blue-light);
-  color: var(--blue);
-}
+.badge-blue  { background: var(--blue-light); color: var(--blue); }
+.badge-gray  { background: var(--gray-200);   color: var(--gray-600); }
+.badge-green { background: #dcfce7;            color: var(--green); }
 
-.badge-gray {
-  background: var(--gray-200);
-  color: var(--gray-600);
-}
-
-.badge-green {
-  background: #dcfce7;
-  color: var(--green);
-}
-
-/* ---- Modal ---- */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -547,7 +472,6 @@ tr:hover td {
   margin-bottom: .75rem;
 }
 
-/* User chip */
 .user-chip {
   display: flex;
   align-items: center;
@@ -581,8 +505,27 @@ hr.divider {
     padding: .65rem 1rem;
     flex-wrap: wrap;
   }
-
   .container {
     padding: 1rem .75rem;
   }
+}
+
+[data-theme='dark'] {
+  --blue: #3b82f6;
+  --blue-hover: #2563eb;
+  --blue-light: #1e3a5f;
+  --gray-100: #1f2937;
+  --gray-200: #374151;
+  --gray-400: #6b7280;
+  --gray-600: #9ca3af;
+  --gray-800: #f3f4f6;
+  --red: #f87171;
+  --green: #4ade80;
+  --white: #111827;
+  --border: #374151;
+}
+
+[data-theme='dark'] body {
+  background: #111827;
+  color: #f3f4f6;
 }
