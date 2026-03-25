@@ -10,5 +10,4 @@ public interface IVotingService
     Task<bool> CrearVotoAsync(CrearVotoRequest request, CancellationToken cancellationToken = default);
     Task<GetGalasResponse> GetGalasAsync(CancellationToken cancellationToken = default);
     Task<GetGalaResponse?> GetGalaAsync(int id, CancellationToken cancellationToken = default);
-    Task<bool> HasUserVotedAsync(int usuarioId, int galaId, CancellationToken cancellationToken = default);
 }
