@@ -63,4 +63,9 @@ public class VotingService : IVotingService
     {
         return await _galaRepository.GetByIdAsync(id, cancellationToken);
     }
+
+    public async Task<bool> HasUserVotedAsync(int usuarioId, int galaId, CancellationToken cancellationToken = default)
+    {
+        return await _votoRepository.HasUserVotedInGalaAsync(usuarioId, galaId, cancellationToken);
+    }
 }
