@@ -3,9 +3,11 @@ import { getToken } from '../auth/token'
 const API_BASE = import.meta.env.VITE_API_BASE as string
 
 export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const headers = new Headers(options.headers)
+  if (typeof options.body === 'string' && !headers.has('Content-Type'))
+    headers.set('Content-Type', 'application/json')
   const token = getToken()
-  if (token) headers['Authorization'] = `Bearer ${token}`
+  if (token) headers.set('Authorization', `Bearer ${token}`)
 
   const res = await fetch(`${API_BASE}/${path}`, { ...options, headers })
 
