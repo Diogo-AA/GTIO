@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { apiFetch } from '../api/client'
@@ -21,8 +21,8 @@ interface Gala {
 export default function VotarPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { t } = useTranslation()
-  const user = getUser()
+  const { t, i18n } = useTranslation()
+  const user = useMemo(() => getUser(), [])
 
   const [gala, setGala] = useState<Gala | null>(null)
   const [loading, setLoading] = useState(true)
@@ -30,25 +30,25 @@ export default function VotarPage() {
   const [votando, setVotando] = useState<number | null>(null)
   const [haVotado, setHaVotado] = useState(false)
 
-  async function loadGala() {
+  const loadGala = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const [data, votado] = await Promise.all([
+      const [data, votosData] = await Promise.all([
         apiFetch<Gala>(`galas/${id}`),
-        user ? apiFetch<boolean>(`votos/ha-votado?usuarioId=${user.id}&galaId=${id}`) : Promise.resolve(false),
+        user ? apiFetch<{ votos: { candidatoId: number }[] }>(`votos?galaId=${id}`) : Promise.resolve({ votos: [] }),
       ])
       setGala(data)
-      setHaVotado(votado)
+      setHaVotado(votosData.votos.length > 0)
     } catch (err: unknown) {
       setError((err as Error).message)
       showToast(t('votar.errorCargar'), 'error')
     } finally {
       setLoading(false)
     }
-  }
+  }, [id, user, t])
 
-  useEffect(() => { loadGala() }, [id])
+  useEffect(() => { loadGala() }, [loadGala])
 
   async function submitVoto(candidatoId: number) {
     if (!user) { navigate('/login'); return }
@@ -85,7 +85,7 @@ export default function VotarPage() {
 
   const totalVotos = (gala.candidatos || []).reduce((s, c) => s + (c.numVotos || 0), 0)
   const fecha = gala.fecha
-    ? new Date(gala.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+    ? new Date(gala.fecha).toLocaleDateString(i18n.language, { day: '2-digit', month: 'short', year: 'numeric' })
     : ''
   const sorted = [...(gala.candidatos || [])].sort((a, b) => b.numVotos - a.numVotos)
 
@@ -114,7 +114,7 @@ export default function VotarPage() {
               <div className="candidato-foto">{t('votar.foto')}</div>
               <div className="candidato-nombre">{c.nombre}</div>
               <div style={{ flex: 1, minWidth: 80 }}>
-                <div className="candidato-votos-label">{c.numVotos} votos · {pct}%</div>
+                <div className="candidato-votos-label">{t('galas.votos', { n: c.numVotos })} · {pct}%</div>
                 <div className="progress-bg">
                   <div className="progress-fill" style={{ width: `${pct}%` }} />
                 </div>

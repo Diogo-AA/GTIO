@@ -23,6 +23,11 @@ public static class AuthEndpoints
             .ProducesValidationProblem()
             .AllowAnonymous()
             .WithName("Register");
+
+        app.MapPost("demo", DemoLoginAsync)
+            .Produces<LoginResponse>(StatusCodes.Status200OK)
+            .AllowAnonymous()
+            .WithName("DemoLogin");
     }
 
     public static async Task<IResult> LoginAsync([FromBody] LoginRequest request, IAuthService authService, CancellationToken cancellationToken)
@@ -31,6 +36,12 @@ public static class AuthEndpoints
         if (response is null)
             return TypedResults.NotFound();
 
+        return TypedResults.Ok(response);
+    }
+
+    public static async Task<IResult> DemoLoginAsync(IAuthService authService, CancellationToken cancellationToken)
+    {
+        var response = await authService.DemoLoginAsync(cancellationToken);
         return TypedResults.Ok(response);
     }
 

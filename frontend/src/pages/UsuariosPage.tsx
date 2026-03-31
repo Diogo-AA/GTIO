@@ -20,8 +20,8 @@ export default function UsuariosPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await apiFetch<{ usuarios: Usuario[] } | Usuario[]>('usuarios')
-      setUsuarios(Array.isArray(data) ? data : data.usuarios)
+      const data = await apiFetch<{ usuarios: Usuario[] }>('usuarios')
+      setUsuarios(data.usuarios)
     } catch (err: unknown) {
       setError((err as Error).message)
       showToast(t('usuarios.errorCargar'), 'error')

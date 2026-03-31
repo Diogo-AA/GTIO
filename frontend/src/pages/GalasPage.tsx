@@ -19,7 +19,7 @@ interface Gala {
 
 export default function GalasPage() {
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [galas, setGalas] = useState<Gala[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -28,8 +28,8 @@ export default function GalasPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await apiFetch<{ galas: Gala[] } | Gala[]>('galas')
-      setGalas(Array.isArray(data) ? data : data.galas)
+      const data = await apiFetch<{ galas: Gala[] }>('galas')
+      setGalas(data.galas)
     } catch (err: unknown) {
       setError((err as Error).message)
       showToast(t('galas.errorCargar'), 'error')
@@ -71,7 +71,7 @@ export default function GalasPage() {
 
         {!loading && !error && galas.map((gala, idx) => {
           const fecha = gala.fecha
-            ? new Date(gala.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+            ? new Date(gala.fecha).toLocaleDateString(i18n.language, { day: '2-digit', month: 'long', year: 'numeric' })
             : ''
           const totalVotos = (gala.candidatos || []).reduce((s, c) => s + (c.numVotos || 0), 0)
 

@@ -20,7 +20,7 @@ interface Props {
 }
 
 export default function UsuarioModal({ userId, onClose }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [usuario, setUsuario] = useState<UsuarioDetalle | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -75,7 +75,7 @@ export default function UsuarioModal({ userId, onClose }: Props) {
                       <tr key={idx}>
                         <td>{v.gala?.nombre || v.gala?.id || ''}</td>
                         <td>{v.candidato?.nombre || v.candidato?.id || ''}</td>
-                        <td>{v.fecha ? new Date(v.fecha).toLocaleDateString('es-ES') : ''}</td>
+                        <td>{v.fecha ? new Date(v.fecha).toLocaleDateString(i18n.language) : ''}</td>
                       </tr>
                     ))}
                   </tbody>

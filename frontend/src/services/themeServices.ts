@@ -7,7 +7,8 @@ export function getSystemTheme(): Theme {
 }
 
 export function getSavedTheme(): Theme | null {
-  return localStorage.getItem(STORAGE_KEY) as Theme | null
+  const value = localStorage.getItem(STORAGE_KEY)
+  return value === 'light' || value === 'dark' ? value : null
 }
 
 export function applyTheme(theme: Theme) {

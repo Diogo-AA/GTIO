@@ -45,8 +45,8 @@ public class VotingService : IVotingService
         if (!isCandidatoInGala)
             return false;
 
-        var hasVoted = await _votoRepository.HasUserVotedInGalaAsync(request.IdUsuario, request.IdGala, cancellationToken);
-        if (hasVoted)
+        var votados = await _votoRepository.GetCandidatosVotadosAsync(request.IdUsuario, request.IdGala, cancellationToken);
+        if (votados.Count > 0)
             return false;
 
         await _votoRepository.CrearVotoAsync(request.IdUsuario, request.IdCandidato, request.IdGala, cancellationToken);
@@ -64,8 +64,12 @@ public class VotingService : IVotingService
         return await _galaRepository.GetByIdAsync(id, cancellationToken);
     }
 
-    public async Task<bool> HasUserVotedAsync(int usuarioId, int galaId, CancellationToken cancellationToken = default)
+    public async Task<GetVotosResponse> GetVotosAsync(int usuarioId, int galaId, CancellationToken cancellationToken = default)
     {
-        return await _votoRepository.HasUserVotedInGalaAsync(usuarioId, galaId, cancellationToken);
+        var candidatos = await _votoRepository.GetCandidatosVotadosAsync(usuarioId, galaId, cancellationToken);
+        return new GetVotosResponse
+        {
+            Votos = candidatos.Select(c => new GetVotoResponse { CandidatoId = c }).ToList()
+        };
     }
 }

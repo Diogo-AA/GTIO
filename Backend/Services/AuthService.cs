@@ -29,6 +29,23 @@ public class AuthService : IAuthService
         return new LoginResponse { AccessToken = token };
     }
 
+    public async Task<LoginResponse> DemoLoginAsync(CancellationToken cancellationToken = default)
+    {
+        const string demoUsername = "demo";
+        const string demoPassword = "demo1234";
+
+        var usuario = await _usuarioRepository.GetByUsernameAsync(demoUsername, cancellationToken);
+        if (usuario is null)
+        {
+            var hashedPassword = PasswordHasher.HashPassword(demoPassword);
+            var id = await _usuarioRepository.CreateAsync(demoUsername, hashedPassword, cancellationToken);
+            usuario = new Models.Usuario { Id = id, Username = demoUsername };
+        }
+
+        var token = _tokenProvider.CreateToken(usuario);
+        return new LoginResponse { AccessToken = token };
+    }
+
     public async Task<RegisterResponse?> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
     {
         var hashedPassword = PasswordHasher.HashPassword(request.Password);

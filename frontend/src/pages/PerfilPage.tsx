@@ -19,7 +19,7 @@ interface UsuarioDetalle {
 
 export default function PerfilPage() {
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const user = getUser()
 
   const [detalle, setDetalle] = useState<UsuarioDetalle | null>(null)
@@ -99,7 +99,7 @@ export default function PerfilPage() {
                     <tr key={idx}>
                       <td>{v.gala?.nombre || ''}</td>
                       <td>{v.candidato?.nombre || ''}</td>
-                      <td>{v.fecha ? new Date(v.fecha).toLocaleDateString('es-ES') : ''}</td>
+                      <td>{v.fecha ? new Date(v.fecha).toLocaleDateString(i18n.language) : ''}</td>
                     </tr>
                   ))}
                 </tbody>

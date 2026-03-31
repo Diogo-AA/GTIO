@@ -34,7 +34,7 @@ export default function Navbar() {
           {NAV_LINKS.map(link => (
             <button
               key={link.path}
-              className={`tab${location.pathname === link.path ? ' active' : ''}`}
+              className={`tab${location.pathname.startsWith(link.path) ? ' active' : ''}`}
               onClick={() => navigate(link.path)}
             >
               {t(link.label)}

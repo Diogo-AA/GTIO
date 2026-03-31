@@ -30,18 +30,18 @@ public class VotoRepository : IVotoRepository
         });
     }
 
-    public async Task<bool> HasUserVotedInGalaAsync(int idUsuario, int idGala, CancellationToken cancellationToken = default)
+    public async Task<List<int>> GetCandidatosVotadosAsync(int idUsuario, int idGala, CancellationToken cancellationToken = default)
     {
         using var connection = await _dataSource.OpenConnectionAsync(cancellationToken);
 
         const string sql = """
-            SELECT COUNT(1)
+            SELECT candidato
             FROM votos
             WHERE usuario = @idUsuario AND gala = @idGala;
         """;
 
-        var count = await connection.ExecuteScalarAsync<int>(sql, new { idUsuario, idGala });
-        return count > 0;
+        var result = await connection.QueryAsync<int>(sql, new { idUsuario, idGala });
+        return result.AsList();
     }
 
     public async Task<bool> IsCandidatoInGalaAsync(int idCandidato, int idGala, CancellationToken cancellationToken = default)

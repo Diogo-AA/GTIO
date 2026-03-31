@@ -53,10 +53,18 @@ export default function LoginPage() {
     }
   }
 
-  function demoLogin() {
-    setSession('demo-token', { id: 1, username: 'UsuarioDemo' })
-    showToast(t('login.modoDemo'), 'info')
-    navigate('/galas')
+  async function demoLogin() {
+    try {
+      const data = await apiFetch<{ accessToken: string }>('auth/demo', { method: 'POST' })
+      const claims = parseJwt(data.accessToken)
+      const id = claims?.sub ? parseInt(claims.sub as string, 10) : 0
+      const username = (claims?.name as string) || 'demo'
+      setSession(data.accessToken, { id, username })
+      showToast(t('login.modoDemo'), 'info')
+      navigate('/galas')
+    } catch (err: unknown) {
+      showToast((err as Error).message, 'error')
+    }
   }
 
   return (

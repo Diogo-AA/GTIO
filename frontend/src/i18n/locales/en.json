@@ -87,6 +87,8 @@
   "common": {
     "cargando": "Loading...",
     "error": "Error",
-    "cerrar": "✕"
+    "cerrar": "✕",
+    "activarModoOscuro": "Enable dark mode",
+    "activarModoClaro": "Enable light mode"
   }
 }

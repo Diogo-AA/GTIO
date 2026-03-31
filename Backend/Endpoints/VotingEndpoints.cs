@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Backend.Contracts.Requests;
 using Backend.Contracts.Responses;
 using Backend.Services;
@@ -50,12 +51,12 @@ public static class VotingEndpoints
             .RequireAuthorization()
             .WithName("GetGala");
 
-        app.MapGet("votos/ha-votado", HasVotado)
-            .Produces<bool>(StatusCodes.Status200OK)
+        app.MapGet("votos", GetVotos)
+            .Produces<GetVotosResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .ProducesValidationProblem()
             .RequireAuthorization()
-            .WithName("HasVotado");
+            .WithName("GetVotos");
     }
 
     public static async Task<IResult> GetUsuarios(IVotingService votingService, CancellationToken cancellationToken)
@@ -97,9 +98,13 @@ public static class VotingEndpoints
         return TypedResults.Ok(response);
     }
 
-    public static async Task<IResult> HasVotado([FromQuery] int usuarioId, [FromQuery] int galaId, IVotingService votingService, CancellationToken cancellationToken)
+    public static async Task<IResult> GetVotos(ClaimsPrincipal user, [FromQuery] int galaId, IVotingService votingService, CancellationToken cancellationToken)
     {
-        var result = await votingService.HasUserVotedAsync(usuarioId, galaId, cancellationToken);
+        var userIdClaim = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdClaim, out var usuarioId))
+            return TypedResults.Unauthorized();
+
+        var result = await votingService.GetVotosAsync(usuarioId, galaId, cancellationToken);
         return TypedResults.Ok(result);
     }
 }

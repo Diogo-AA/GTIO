@@ -87,6 +87,8 @@
   "common": {
     "cargando": "Kargatzen...",
     "error": "Errorea",
-    "cerrar": "✕"
+    "cerrar": "✕",
+    "activarModoOscuro": "Ilunpeko modua aktibatu",
+    "activarModoClaro": "Argi modua aktibatu"
   }
 }
