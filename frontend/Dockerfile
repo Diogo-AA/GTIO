@@ -1,7 +1,7 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 COPY . .
 ARG VITE_API_BASE=http://localhost:8081
 ENV VITE_API_BASE=$VITE_API_BASE
