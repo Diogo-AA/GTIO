@@ -2,7 +2,7 @@ import 'dotenv/config'
 import Groq from "groq-sdk";
 import fs from "fs/promises";
 import path from "path";
-import { execSync } from "child_process";
+import { spawnSync } from "child_process";
 import { fileURLToPath } from "url";
 
 const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -181,28 +181,26 @@ Generate a complete, production-ready test file. Requirements:
 async function runTests(outputPath, testType) {
   console.log(`\n🚀 Running tests...`);
 
-  let command;
+  let args;
   if (testType === "e2e") {
     const normalizedPath = outputPath.replace(/\\/g, '/');
-    command = `npx playwright test ${normalizedPath} --reporter=line`;
+    args = ["playwright", "test", normalizedPath, "--reporter=line"];
   } else {
-    command = `npx vitest run ${outputPath} --reporter=verbose`;
+    args = ["vitest", "run", outputPath, "--reporter=verbose"];
   }
 
-  console.log(`   $ ${command}\n`);
+  console.log(`   $ npx ${args.join(" ")}\n`);
 
-  try {
-    const output = execSync(command, {
-      encoding: "utf-8",
-      stdio: "pipe",
-    });
+  const result = spawnSync("npx", args, { encoding: "utf-8", stdio: "pipe" });
+  const output = result.stdout || "";
+  if (result.status === 0) {
     console.log(output);
     console.log(`✅ All tests passed!`);
     return { success: true, output };
-  } catch (error) {
+  } else {
     console.error(`❌ Some tests failed:\n`);
-    console.error(error.stdout || error.message);
-    return { success: false, output: error.stdout, error: error.message };
+    console.error(result.stdout || result.stderr || "");
+    return { success: false, output: result.stdout, error: result.stderr };
   }
 }
 
