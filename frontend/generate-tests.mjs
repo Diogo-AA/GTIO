@@ -10,22 +10,21 @@ const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const TEST_STRATEGIES = {
   component: {
     pattern: /\.(tsx|jsx)$/,
-    framework: "vitest + @testing-library/react",
-    imports: `import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'`,
-    instructions: `Generate comprehensive React component tests using Vitest and Testing Library.
-Cover: rendering, user interactions, props variations, async behavior, and edge cases.
-Use screen queries, userEvent for interactions, and vi.mock() for dependencies.
-Do NOT test implementation details, test behavior from the user's perspective.`,
+    framework: "playwright",
+    imports: `import { test, expect } from '@playwright/test'`,
+    instructions: `Generate comprehensive tests for this React component using the Playwright test runner (test, expect).
+Focus on rendering behaviour, props variations, and key user interactions exposed by the component's public API.
+Avoid implementation details; prefer assertions based on rendered output (text content, attributes, accessible roles).
+Include meaningful test descriptions and cover edge cases relevant to how the component is expected to be used.`,
   },
   service: {
     pattern: /\.(ts|js)$/,
-    framework: "vitest",
-    imports: `import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'`,
-    instructions: `Generate unit tests for this service/utility using Vitest.
+    framework: "playwright",
+    imports: `import { test, expect } from '@playwright/test'`,
+    instructions: `Generate unit tests for this service/utility using the Playwright test runner (test, expect).
 Cover: happy paths, error handling, edge cases, and boundary conditions.
-Mock external dependencies (fetch, axios, third-party libs) with vi.mock() or vi.fn().
-Test pure functions thoroughly with multiple input scenarios.`,
+Use plain JavaScript/TypeScript to mock external dependencies (fetch, axios, third-party libs) when needed.
+Test pure functions thoroughly with multiple input scenarios and clear, specific expectations.`,
   },
   e2e: {
     pattern: /\.(tsx|jsx|ts|js)$/,
