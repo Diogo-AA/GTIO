@@ -3,6 +3,7 @@ using Backend.Contracts.Requests;
 using Backend.Contracts.Responses;
 using Backend.Data;
 using Backend.Models;
+using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 
 namespace Backend.Services;
@@ -11,11 +12,13 @@ public class AuthService : IAuthService
 {
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly JwtTokenProvider _tokenProvider;
+    private readonly IConfiguration _configuration;
 
-    public AuthService(IUsuarioRepository usuarioRepository, JwtTokenProvider tokenProvider)
+    public AuthService(IUsuarioRepository usuarioRepository, JwtTokenProvider tokenProvider, IConfiguration configuration)
     {
         _usuarioRepository = usuarioRepository;
         _tokenProvider = tokenProvider;
+        _configuration = configuration;
     }
 
     public async Task<LoginResponse?> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
@@ -32,7 +35,7 @@ public class AuthService : IAuthService
     public async Task<LoginResponse> DemoLoginAsync(CancellationToken cancellationToken = default)
     {
         const string demoUsername = "demo";
-        const string demoPassword = "demo1234";
+        var demoPassword = _configuration["Demo:Password"] ?? "demo1234";
 
         var usuario = await _usuarioRepository.GetByUsernameAsync(demoUsername, cancellationToken);
         if (usuario is null)
