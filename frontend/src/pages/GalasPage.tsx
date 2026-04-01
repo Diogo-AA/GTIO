@@ -80,7 +80,10 @@ export default function GalasPage() {
               key={gala.id}
               className="gala-row"
               style={{ cursor: 'pointer', borderBottom: idx === galas.length - 1 ? 'none' : undefined }}
+              role="button"
+              tabIndex={0}
               onClick={() => navigate(`/galas/${gala.id}`)}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/galas/${gala.id}`) }}
             >
               <div className="gala-row-info">
                 <div className="gala-nombre">{gala.nombre}</div>
