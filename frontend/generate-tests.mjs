@@ -181,17 +181,20 @@ Generate a complete, production-ready test file. Requirements:
 async function runTests(outputPath, testType) {
   console.log(`\n🚀 Running tests...`);
 
-  let args;
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  let bin, args;
   if (testType === "e2e") {
     const normalizedPath = outputPath.replace(/\\/g, '/');
-    args = ["playwright", "test", normalizedPath, "--reporter=line"];
+    bin = path.join(__dirname, "node_modules", ".bin", "playwright");
+    args = ["test", normalizedPath, "--reporter=line"];
   } else {
-    args = ["vitest", "run", outputPath, "--reporter=verbose"];
+    bin = path.join(__dirname, "node_modules", ".bin", "vitest");
+    args = ["run", outputPath, "--reporter=verbose"];
   }
 
-  console.log(`   $ npx ${args.join(" ")}\n`);
+  console.log(`   $ ${bin} ${args.join(" ")}\n`);
 
-  const result = spawnSync("npx", args, { encoding: "utf-8", stdio: "pipe" });
+  const result = spawnSync(bin, args, { encoding: "utf-8", stdio: "pipe" });
   const output = result.stdout || "";
   if (result.status === 0) {
     console.log(output);
