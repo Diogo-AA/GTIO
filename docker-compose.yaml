@@ -18,6 +18,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-Development}
       - ASPNETCORE_URLS=http://+:${PUERTO_API-8080}
       - Db__ConnString=server=bbdd_votacion_mysql;port=${PUERTO_MYSQL-3306};uid=user;pwd=pass;database=votacion_db;
+      - Demo__Password=${DEMO_PASSWORD:-demo1234}
     env_file:
       - path: .env
         required: false
