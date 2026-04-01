@@ -42,7 +42,12 @@ export default function UsuarioModal({ userId, onClose }: Props) {
   }, [userId])
 
   return (
-    <div className="modal-overlay open" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+    <div
+      className="modal-overlay open"
+      role="presentation"
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+      onKeyDown={e => { if (e.key === 'Escape') onClose() }}
+    >
       <div className="modal">
         <button className="modal-close" onClick={onClose}>{t('common.cerrar')}</button>
 
