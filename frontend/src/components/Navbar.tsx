@@ -25,7 +25,7 @@ export default function Navbar() {
 
   return (
     <nav>
-      <div className="nav-brand" style={{ cursor: 'pointer' }} onClick={() => navigate(user ? '/galas' : '/login')}>
+      <div className="nav-brand" style={{ cursor: 'pointer' }} role="button" tabIndex={0} onClick={() => navigate(user ? '/galas' : '/login')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(user ? '/galas' : '/login') }}>
         {t('nav.brand')}
       </div>
 
