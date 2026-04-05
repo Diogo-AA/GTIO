@@ -34,18 +34,6 @@ builder.Services.AddAuthorization();
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 builder.Services.AddScoped<JwtTokenProvider>();
 
-builder.Services.AddCors(options =>
-{
-    var frontendOrigins = builder.Configuration.GetSection("Cors:Frontend").Get<string[]>() 
-        ?? [builder.Configuration["Cors:Frontend"]!];
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins(frontendOrigins)
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
-
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "API Votación", Version = "v1" });
@@ -80,8 +68,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();

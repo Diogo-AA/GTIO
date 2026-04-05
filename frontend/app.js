@@ -1,6 +1,6 @@
 'use strict';
 
-const API_BASE = 'http://localhost:8080';
+const API_BASE = 'http://localhost:8000';
 
 const state = {
   token: localStorage.getItem('ot_token') || null,
