@@ -4,7 +4,7 @@ consumers:
   - username: auth0-consumer
     jwt_secrets:
       - algorithm: RS256
-        key: https://dev-bd8co7uzp2no1731.us.auth0.com/
+        key: https://dev-bd8co7uzp2no173l.us.auth0.com/
         secret: "placeholder"
         rsa_public_key: |
           -----BEGIN PUBLIC KEY-----
