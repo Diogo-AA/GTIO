@@ -9,46 +9,51 @@ public static class VotingEndpoints
 {
     public static void MapVotingEndpoints(this IEndpointRouteBuilder app)
     {
+        // Solo admin puede ver todos los usuarios
         app.MapGet("usuarios", GetUsuarios)
             .Produces<GetUsuariosResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden)
             .ProducesValidationProblem()
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("GetUsuarios");
 
+        // Solo admin puede ver un usuario concreto
         app.MapGet("usuarios/{id:int}", GetUsuario)
             .Produces<GetUsuarioResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound)
             .ProducesValidationProblem()
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("GetUsuario");
 
+        // Cualquier usuario autenticado con rol puede votar
         app.MapPost("votos", CrearVoto)
             .Produces(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden)
             .ProducesValidationProblem()
-            .RequireAuthorization()
+            .RequireAuthorization("Usuario")
             .WithName("CrearVoto");
 
+        // Cualquier usuario autenticado con rol puede ver galas
         app.MapGet("galas", GetGalas)
             .Produces<GetGalasResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden)
             .ProducesValidationProblem()
-            .RequireAuthorization()
+            .RequireAuthorization("Usuario")
             .WithName("GetGalas");
 
+        // Cualquier usuario autenticado con rol puede ver una gala
         app.MapGet("galas/{id:int}", GetGala)
             .Produces<GetGalaResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound)
             .ProducesValidationProblem()
-            .RequireAuthorization()
+            .RequireAuthorization("Usuario")
             .WithName("GetGala");
     }
 
