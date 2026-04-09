@@ -12,6 +12,7 @@ public static class VotingEndpoints
         app.MapGet("usuarios", GetUsuarios)
             .Produces<GetUsuariosResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
             .ProducesValidationProblem()
             .RequireAuthorization()
             .WithName("GetUsuarios");
@@ -20,6 +21,7 @@ public static class VotingEndpoints
             .Produces<GetUsuarioResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status403Forbidden)
             .ProducesValidationProblem()
             .RequireAuthorization()
             .WithName("GetUsuario");
@@ -27,6 +29,7 @@ public static class VotingEndpoints
         app.MapPost("votos", CrearVoto)
             .Produces(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
             .ProducesValidationProblem()
             .RequireAuthorization()
             .WithName("CrearVoto");
@@ -34,6 +37,7 @@ public static class VotingEndpoints
         app.MapGet("galas", GetGalas)
             .Produces<GetGalasResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
             .ProducesValidationProblem()
             .RequireAuthorization()
             .WithName("GetGalas");
@@ -42,6 +46,7 @@ public static class VotingEndpoints
             .Produces<GetGalaResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status403Forbidden)
             .ProducesValidationProblem()
             .RequireAuthorization()
             .WithName("GetGala");
