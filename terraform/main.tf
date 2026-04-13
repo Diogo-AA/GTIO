@@ -101,6 +101,8 @@ resource "aws_instance" "app" {
   subnet_id     = aws_subnet.public.id
   key_name      = data.aws_key_pair.lab_key.key_name
 
+  associate_public_ip_address = true
+
   vpc_security_group_ids = [aws_security_group.backend_sg.id]
 
   user_data = <<-EOF
