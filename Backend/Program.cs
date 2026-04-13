@@ -20,10 +20,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            RoleClaimType = "https://api.ot-votacion.com/roles"
         };
     });
-builder.Services.AddAuthorization();
+
+// Políticas de autorización
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Admin", policy =>
+        policy.RequireRole("admin"))
+    .AddPolicy("Usuario", policy =>
+        policy.RequireRole("usuario", "admin"));
 
 builder.Services.AddSwaggerGen(options =>
 {
