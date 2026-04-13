@@ -17,13 +17,15 @@ services:
     build:
       context: Backend/
       dockerfile: Dockerfile
-    ports:
-      - "${PUERTO_API-8080}:${PUERTO_API-8080}"
+    networks:
+      - kong-net
+      - default
     environment:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-Development}
       - ASPNETCORE_URLS=http://+:${PUERTO_API-8080}
       - Db__ConnString=server=bbdd_votacion_mysql;port=${PUERTO_MYSQL-3306};uid=user;pwd=pass;database=votacion_db;
-      - Demo__Password=${DEMO_PASSWORD:-demo1234}
+      - Auth0__Domain=dev-bd8co7uzp2no173l.us.auth0.com
+      - Auth0__Audience=https://api.ot-votacion.com
     env_file:
       - path: .env
         required: false
@@ -31,11 +33,13 @@ services:
       - ~/.aspnet/https:/https:ro
     depends_on:
       - base_datos
-      
+
   base_datos:
     image: mysql:8.4
     container_name: bbdd_votacion_mysql
     restart: unless-stopped
+    networks:
+      - kong-net
     env_file:
       - BBDD/.env
     ports:
@@ -43,6 +47,34 @@ services:
     volumes:
       - datos_mysql:/var/lib/mysql
       - ./BBDD/init:/docker-entrypoint-initdb.d:ro
+
+  kong-dbless:
+    image: '${GW_IMAGE:-kong/kong-gateway:3.7}'
+    container_name: kong-dbless-readonly
+    read_only: true
+    restart: unless-stopped
+    networks:
+      - kong-net
+    volumes:
+      - ./Kong:/kong/declarative/:ro
+    tmpfs:
+      - /tmp
+      - /var/run/kong
+    environment:
+      KONG_PREFIX: /var/run/kong
+      KONG_DATABASE: off
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    ports:
+      - "8000:8000"
+      - "127.0.0.1:8001:8001"
+
+networks:
+  kong-net:
 
 volumes:
   datos_mysql:
