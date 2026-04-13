@@ -11,6 +11,7 @@
     "gen:tests": "node generate-tests.mjs"
   },
   "dependencies": {
+    "@auth0/auth0-spa-js": "^2.19.1",
     "i18next": "^25.8.13",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

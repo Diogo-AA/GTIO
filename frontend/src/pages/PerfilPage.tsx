@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { apiFetch } from '../api/client'
-import { getUser, clearSession } from '../auth/token'
+import { useAuth } from '../auth/AuthContext'
 import { showToast } from '../services/toastService'
 
 interface Voto {
@@ -18,9 +17,8 @@ interface UsuarioDetalle {
 }
 
 export default function PerfilPage() {
-  const navigate = useNavigate()
   const { t, i18n } = useTranslation()
-  const user = getUser()
+  const { user, logout } = useAuth()
 
   const [detalle, setDetalle] = useState<UsuarioDetalle | null>(null)
   const [loading, setLoading] = useState(true)
@@ -32,7 +30,7 @@ export default function PerfilPage() {
       setLoading(true)
       setError(null)
       try {
-        const data = await apiFetch<UsuarioDetalle>(`usuarios/${user.id}`)
+        const data = await apiFetch<UsuarioDetalle>(`usuarios/${encodeURIComponent(user.id)}`)
         setDetalle(data)
       } catch (err: unknown) {
         setError((err as Error).message)
@@ -43,10 +41,9 @@ export default function PerfilPage() {
     load()
   }, [])
 
-  function logout() {
-    clearSession()
-    navigate('/login')
+  async function handleLogout() {
     showToast(t('perfil.sesionCerrada'), 'info')
+    await logout()
   }
 
   return (
@@ -60,7 +57,7 @@ export default function PerfilPage() {
             {t('perfil.votosEmitidos', { n: detalle?.votos.length ?? 0 })}
           </div>
         </div>
-        <button className="btn btn-danger btn-sm" onClick={logout}>{t('perfil.cerrarSesion')}</button>
+        <button className="btn btn-danger btn-sm" onClick={handleLogout}>{t('perfil.cerrarSesion')}</button>
       </div>
 
       <div className="box" style={{ padding: 0, overflow: 'hidden' }}>

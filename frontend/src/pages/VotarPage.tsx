@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { apiFetch } from '../api/client'
-import { getUser } from '../auth/token'
 import { showToast } from '../services/toastService'
 
 interface Candidato {
@@ -22,7 +21,6 @@ export default function VotarPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
-  const user = useMemo(() => getUser(), [])
 
   const [gala, setGala] = useState<Gala | null>(null)
   const [loading, setLoading] = useState(true)
@@ -36,7 +34,7 @@ export default function VotarPage() {
     try {
       const [data, votosData] = await Promise.all([
         apiFetch<Gala>(`galas/${id}`),
-        user ? apiFetch<{ votos: { candidatoId: number }[] }>(`votos?galaId=${id}`) : Promise.resolve({ votos: [] }),
+        apiFetch<{ votos: { candidatoId: number }[] }>(`votos?galaId=${id}`),
       ])
       setGala(data)
       setHaVotado(votosData.votos.length > 0)
@@ -46,18 +44,17 @@ export default function VotarPage() {
     } finally {
       setLoading(false)
     }
-  }, [id, user, t])
+  }, [id, t])
 
   useEffect(() => { loadGala() }, [loadGala])
 
   async function submitVoto(candidatoId: number) {
-    if (!user) { navigate('/login'); return }
     if (!gala) return
     setVotando(candidatoId)
     try {
       await apiFetch('votos', {
         method: 'POST',
-        body: JSON.stringify({ idUsuario: user.id, idCandidato: candidatoId, idGala: gala.id }),
+        body: JSON.stringify({ idCandidato: candidatoId, idGala: gala.id }),
       })
       showToast(t('votar.votoRegistrado'), 'success')
       await loadGala()

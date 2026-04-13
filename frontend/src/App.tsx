@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { getToken } from './auth/token'
+import { useAuth } from './auth/AuthContext'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './router/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
@@ -10,6 +10,16 @@ import PerfilPage from './pages/PerfilPage'
 import Toast from './components/Toast'
 
 export default function App() {
+  const { isAuthenticated, isLoading } = useAuth()
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div className="spinner" />
+      </div>
+    )
+  }
+
   return (
     <>
       <Navbar />
@@ -22,7 +32,7 @@ export default function App() {
           <Route path="/usuarios" element={<UsuariosPage />} />
           <Route path="/perfil" element={<PerfilPage />} />
         </Route>
-        <Route path="*" element={<Navigate to={getToken() ? '/galas' : '/login'} replace />} />
+        <Route path="*" element={<Navigate to={isAuthenticated ? '/galas' : '/login'} replace />} />
       </Routes>
     </>
   )
