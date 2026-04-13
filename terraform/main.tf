@@ -90,16 +90,16 @@ resource "aws_security_group" "backend_sg" {
   }
 }
 
-resource "aws_key_pair" "deployer" {
-  key_name   = "gtio-deployer-key"
-  public_key = var.public_key
+data "aws_key_pair" "lab_key" {
+  key_name   = "vockey"
+
 }
 
 resource "aws_instance" "app" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
   subnet_id     = aws_subnet.public.id
-  key_name      = aws_key_pair.deployer.key_name
+  key_name      = data.aws_key_pair.lab_key.key_name
 
   vpc_security_group_ids = [aws_security_group.backend_sg.id]
 
@@ -134,7 +134,7 @@ resource "aws_instance" "app" {
               cat << 'ENVFILE' > .env
               ENVIRONMENT=Production
               PUERTO_API=8000
-              DB_CONN_STRING=server=${var.db_host};port=${var.db_port};uid=${var.db_user};pwd=${var.db_password};database=${var.db_name};
+              DB_CONN_STRING=server=${aws_db_instance.mysql.address};port=${var.db_port};uid=${var.db_user};pwd=${var.db_password};database=${var.db_name};
               ENVFILE
 
               chown -R ubuntu:ubuntu /home/ubuntu/GTIO
