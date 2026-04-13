@@ -12,15 +12,13 @@ public static class VotingEndpoints
         app.MapGet("usuarios", GetUsuarios)
             .Produces<GetUsuariosResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status403Forbidden)
             .ProducesValidationProblem()
             .RequireAuthorization()
             .WithName("GetUsuarios");
-        
+
         app.MapGet("usuarios/{id:int}", GetUsuario)
             .Produces<GetUsuarioResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesValidationProblem()
             .RequireAuthorization()
@@ -36,7 +34,6 @@ public static class VotingEndpoints
         app.MapGet("galas", GetGalas)
             .Produces<GetGalasResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status403Forbidden)
             .ProducesValidationProblem()
             .RequireAuthorization()
             .WithName("GetGalas");
@@ -44,7 +41,6 @@ public static class VotingEndpoints
         app.MapGet("galas/{id:int}", GetGala)
             .Produces<GetGalaResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesValidationProblem()
             .RequireAuthorization()
@@ -86,7 +82,7 @@ public static class VotingEndpoints
         var response = await votingService.GetGalaAsync(id, cancellationToken);
         if (response is null)
             return TypedResults.NotFound();
-            
+
         return TypedResults.Ok(response);
     }
 }
