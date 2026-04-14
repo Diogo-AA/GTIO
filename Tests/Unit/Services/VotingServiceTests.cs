@@ -20,7 +20,7 @@ public class VotingServiceTests
         _sut = new VotingService(_votoRepository, _galaRepository);
     }
 
-    // --- CrearVotoAsync ---
+    //CrearVotoAsync
 
     [Fact]
     public async Task CrearVotoAsync_TodoValido_DevuelveTrue()
@@ -102,7 +102,7 @@ public class VotingServiceTests
             Arg.Any<string>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>());
     }
 
-    // --- GetGalasAsync ---
+    //GetGalasAsync
 
     [Fact]
     public async Task GetGalasAsync_DevuelveListaDeGalas()
@@ -133,8 +133,7 @@ public class VotingServiceTests
         result.Galas.Should().BeEmpty();
     }
 
-    // --- GetGalaAsync ---
-
+    //GetGalaAsync
     [Fact]
     public async Task GetGalaAsync_Existe_DevuelveGala()
     {

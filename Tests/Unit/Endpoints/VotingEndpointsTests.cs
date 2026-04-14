@@ -24,7 +24,7 @@ public class VotingEndpointsTests
         return new ClaimsPrincipal(new ClaimsIdentity(claims, "test"));
     }
 
-    // --- CrearVoto ---
+    //CrearVoto
 
     [Fact]
     public async Task CrearVoto_VotoValido_DevuelveCreated()
@@ -65,7 +65,7 @@ public class VotingEndpointsTests
         result.Should().BeOfType<ForbidHttpResult>();
     }
 
-    // --- GetGalas ---
+    //GetGalas
 
     [Fact]
     public async Task GetGalas_DevuelveOkConGalas()
@@ -84,7 +84,7 @@ public class VotingEndpointsTests
         okResult.Value!.Galas.Should().HaveCount(1);
     }
 
-    // --- GetGala ---
+    //GetGala
 
     [Fact]
     public async Task GetGala_Existe_DevuelveOk()
