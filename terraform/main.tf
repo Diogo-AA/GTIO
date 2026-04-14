@@ -103,7 +103,7 @@ resource "aws_instance" "app" {
 
   # IP pública necesaria: esta instancia actúa como API Gateway (Kong en puerto 8000).
   # El acceso está restringido por backend_sg: solo puertos 8000 (API) y 22 (SSH desde IP fija).
-  associate_public_ip_address = true # nosec
+  associate_public_ip_address = true # nosonar
 
   vpc_security_group_ids = [aws_security_group.backend_sg.id]
 
