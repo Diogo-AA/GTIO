@@ -2,7 +2,7 @@
 
 resource "aws_security_group" "frontend_sg" {
   name        = "gtio-frontend-sg"
-  description = "Permitir trafico HTTP y SSH al frontend"
+  description = "Permitir trafico HTTPS y SSH al frontend"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -14,9 +14,9 @@ resource "aws_security_group" "frontend_sg" {
   }
 
   ingress {
-    description = "HTTP Frontend"
-    from_port   = 5500
-    to_port     = 5500
+    description = "HTTPS Frontend"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -44,7 +44,7 @@ resource "aws_instance" "frontend" {
   user_data = <<-EOF
               #!/bin/bash
               apt-get update
-              apt-get install -y ca-certificates curl gnupg git
+              apt-get install -y ca-certificates curl gnupg git nginx openssl
 
               # Instalar Docker
               install -m 0755 -d /etc/apt/keyrings
@@ -76,8 +76,33 @@ resource "aws_instance" "frontend" {
 
               chown -R ubuntu:ubuntu /home/ubuntu/GTIO
 
-              # Levantar frontend en puerto 80
+              # Levantar frontend en puerto 5500
               docker compose up -d frontend
+
+              # Certificado autofirmado para HTTPS
+              mkdir -p /etc/nginx/ssl
+              openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout /etc/nginx/ssl/selfsigned.key \
+                -out /etc/nginx/ssl/selfsigned.crt \
+                -subj "/CN=gtio-frontend"
+
+              # Nginx como proxy HTTPS -> Docker puerto 5500
+              {
+                echo 'server {'
+                echo '    listen 443 ssl;'
+                echo '    ssl_certificate /etc/nginx/ssl/selfsigned.crt;'
+                echo '    ssl_certificate_key /etc/nginx/ssl/selfsigned.key;'
+                echo '    location / {'
+                echo '        proxy_pass http://localhost:5500;'
+                echo '        proxy_set_header Host $host;'
+                echo '        proxy_set_header X-Real-IP $remote_addr;'
+                echo '    }'
+                echo '}'
+              } > /etc/nginx/sites-available/frontend
+
+              ln -sf /etc/nginx/sites-available/frontend /etc/nginx/sites-enabled/frontend
+              rm -f /etc/nginx/sites-enabled/default
+              systemctl restart nginx
               EOF
 
   tags = {
