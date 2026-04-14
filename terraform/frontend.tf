@@ -80,7 +80,7 @@ resource "aws_cloudfront_distribution" "frontend" {
   tags = { Name = "gtio-frontend" }
 }
 
-# Política del bucket: solo acepta peticiones firmadas por esta distribución de CloudFront
+# Política del bucket: solo CloudFront puede leer y todas las peticiones deben usar HTTPS
 resource "aws_s3_bucket_policy" "frontend" {
   bucket = aws_s3_bucket.frontend.id
 
@@ -98,6 +98,21 @@ resource "aws_s3_bucket_policy" "frontend" {
         Condition = {
           StringEquals = {
             "AWS:SourceArn" = aws_cloudfront_distribution.frontend.arn
+          }
+        }
+      },
+      {
+        Sid       = "DenyHTTP"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.frontend.arn,
+          "${aws_s3_bucket.frontend.arn}/*"
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
           }
         }
       }
