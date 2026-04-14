@@ -17,7 +17,7 @@ output "ssh_command" {
 
 output "frontend_url" {
   description = "URL pública del frontend"
-  value       = "http://${aws_instance.frontend.public_ip}"
+  value       = "http://${aws_instance.frontend.public_ip}:5500"
 }
 
 output "frontend_ssh_command" {
