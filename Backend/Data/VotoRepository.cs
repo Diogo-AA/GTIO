@@ -12,36 +12,37 @@ public class VotoRepository : IVotoRepository
         _dataSource = dataSource;
     }
 
-    public async Task<int> CrearVotoAsync(int idUsuario, int idCandidato, int idGala, CancellationToken cancellationToken = default)
+    public async Task<int> CrearVotoAsync(string auth0Sub, int idCandidato, int idGala, CancellationToken cancellationToken = default)
     {
         using var connection = await _dataSource.OpenConnectionAsync(cancellationToken);
 
         const string sql = """
             INSERT INTO votos (fecha, usuario, candidato, gala)
-            VALUES (@fecha, @idUsuario, @idCandidato, @idGala);
+            VALUES (@fecha, @auth0Sub, @idCandidato, @idGala);
             SELECT LAST_INSERT_ID();
         """;
 
-        return await connection.ExecuteScalarAsync<int>(sql, new { 
-            fecha = DateTime.Now, 
-            idUsuario, 
-            idCandidato, 
-            idGala 
+        return await connection.ExecuteScalarAsync<int>(sql, new
+        {
+            fecha = DateTime.Now,
+            auth0Sub,
+            idCandidato,
+            idGala
         });
     }
 
-    public async Task<List<int>> GetCandidatosVotadosAsync(int idUsuario, int idGala, CancellationToken cancellationToken = default)
+    public async Task<bool> HasUserVotedInGalaAsync(string auth0Sub, int idGala, CancellationToken cancellationToken = default)
     {
         using var connection = await _dataSource.OpenConnectionAsync(cancellationToken);
 
         const string sql = """
-            SELECT candidato
+            SELECT COUNT(1)
             FROM votos
-            WHERE usuario = @idUsuario AND gala = @idGala;
+            WHERE usuario = @auth0Sub AND gala = @idGala;
         """;
 
-        var result = await connection.QueryAsync<int>(sql, new { idUsuario, idGala });
-        return result.AsList();
+        var count = await connection.ExecuteScalarAsync<int>(sql, new { auth0Sub, idGala });
+        return count > 0;
     }
 
     public async Task<bool> IsCandidatoInGalaAsync(int idCandidato, int idGala, CancellationToken cancellationToken = default)

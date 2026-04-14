@@ -15,7 +15,3 @@ VALUES
 -- Relacionar candidatos con la gala 1
 INSERT INTO gala_candidatos (gala_id, candidato_id)
 SELECT 1, id FROM candidatos;
-
--- Usuario de ejemplo
-INSERT INTO usuarios (nombre, passwd)
-VALUES ('Usuario Demo', 'PASS_DE_EJEMPLO');
