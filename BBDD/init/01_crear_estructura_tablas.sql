@@ -1,12 +1,6 @@
 CREATE DATABASE IF NOT EXISTS votacion_db;
 USE votacion_db;
 
-CREATE TABLE IF NOT EXISTS usuarios (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(100) NOT NULL UNIQUE,
-  passwd VARCHAR(255) NOT NULL
-);
-
 -- Candidatos
 CREATE TABLE IF NOT EXISTS candidatos (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -29,14 +23,13 @@ CREATE TABLE IF NOT EXISTS gala_candidatos (
   FOREIGN KEY (candidato_id) REFERENCES candidatos(id)
 );
 
--- Votos
+-- Votos (usuario es el sub de Auth0)
 CREATE TABLE IF NOT EXISTS votos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   fecha DATETIME NOT NULL,
-  usuario INT NOT NULL,
+  usuario VARCHAR(255) NOT NULL,
   candidato INT NOT NULL,
   gala INT NOT NULL,
-  FOREIGN KEY (usuario) REFERENCES usuarios(id),
   FOREIGN KEY (candidato) REFERENCES candidatos(id),
   FOREIGN KEY (gala) REFERENCES gala(id)
 );
