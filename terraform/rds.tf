@@ -21,7 +21,6 @@ resource "aws_db_instance" "mysql" {
   skip_final_snapshot  = true
   publicly_accessible  = false 
 }
-<<<<<<< HEAD
 
 resource "aws_security_group" "rds_sg" {
   name        = "gtio-rds-sg"
@@ -44,5 +43,3 @@ resource "aws_security_group" "rds_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-=======
->>>>>>> e44b7b513d1622b99ff6910917abfad9bcbe1470
