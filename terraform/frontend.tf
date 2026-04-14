@@ -56,6 +56,12 @@ resource "aws_cloudfront_distribution" "frontend" {
   default_root_object = "index.html"
   price_class         = "PriceClass_100" # Solo Europa y Norteamérica (más económico)
 
+  logging_config {
+    bucket          = aws_s3_bucket.frontend_logs.bucket_domain_name
+    prefix          = "cloudfront-logs/"
+    include_cookies = false
+  }
+
   default_cache_behavior {
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD"]
