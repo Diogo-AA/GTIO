@@ -16,11 +16,11 @@ output "ssh_command" {
 # ─── Frontend ─────────────────────────────────────────────────────────────────
 
 output "frontend_url" {
-  description = "URL pública del frontend (S3 website)"
-  value       = "http://${aws_s3_bucket_website_configuration.frontend.website_endpoint}"
+  description = "URL pública del frontend"
+  value       = "http://${aws_instance.frontend.public_ip}"
 }
 
-output "s3_bucket_name" {
-  description = "Nombre del bucket S3 donde se despliegan los archivos del frontend"
-  value       = aws_s3_bucket.frontend.id
+output "frontend_ssh_command" {
+  description = "Comando para conectarse por SSH al frontend"
+  value       = "ssh ubuntu@${aws_instance.frontend.public_ip}"
 }
