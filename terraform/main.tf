@@ -152,6 +152,27 @@ resource "aws_instance" "app" {
   }
 }
 
+# Security group para RDS (acceso MySQL solo desde backend)
+resource "aws_security_group" "rds_sg" {
+  name        = "gtio-rds-sg"
+  description = "Permite MySQL desde el backend"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.backend_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"] # nosonar
+  }
+}
+
 # Subredes privadas para RDS
 resource "aws_subnet" "private_1" {
   vpc_id            = aws_vpc.main.id
