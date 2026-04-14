@@ -2,9 +2,28 @@
 
 # ─── S3 ───────────────────────────────────────────────────────────────────────
 
+resource "aws_s3_bucket" "frontend_logs" {
+  bucket = "gtio-frontend-spa-logs"
+  tags   = { Name = "gtio-frontend-logs" }
+}
+
+resource "aws_s3_bucket_public_access_block" "frontend_logs" {
+  bucket                  = aws_s3_bucket.frontend_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 resource "aws_s3_bucket" "frontend" {
   bucket = "gtio-frontend-spa"
   tags   = { Name = "gtio-frontend" }
+}
+
+resource "aws_s3_bucket_logging" "frontend" {
+  bucket        = aws_s3_bucket.frontend.id
+  target_bucket = aws_s3_bucket.frontend_logs.id
+  target_prefix = "s3-access-logs/"
 }
 
 # El bucket es privado; solo CloudFront puede leer su contenido
