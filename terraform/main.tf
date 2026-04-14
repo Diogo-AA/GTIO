@@ -126,11 +126,9 @@ resource "aws_instance" "app" {
               cd GTIO
 
               # Crear archivo de entorno para docker-compose
-              cat << 'ENVFILE' > .env
-              ENVIRONMENT=Production
-              PUERTO_API=8000
-              DB_CONN_STRING=server=${aws_db_instance.mysql.address};port=${var.db_port};uid=${var.db_user};pwd=${var.db_password};database=${var.db_name};
-              ENVFILE
+              echo "ENVIRONMENT=Production" > .env
+              echo "PUERTO_API=8000" >> .env
+              echo "DB_CONN_STRING=server=${aws_db_instance.mysql.address};port=${var.db_port};uid=${var.db_user};pwd=${var.db_password};database=${var.db_name};" >> .env
 
               chown -R ubuntu:ubuntu /home/ubuntu/GTIO
 
