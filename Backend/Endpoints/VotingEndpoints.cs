@@ -3,7 +3,6 @@ using Backend.Contracts.Requests;
 using Backend.Contracts.Responses;
 using Backend.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Backend.Endpoints;
 
@@ -39,12 +38,6 @@ public static class VotingEndpoints
             .RequireAuthorization("Usuario")
             .WithName("GetGala");
 
-        app.MapGet("votos", GetVotos)
-            .Produces<GetVotosResponse>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status401Unauthorized)
-            .ProducesValidationProblem()
-            .RequireAuthorization()
-            .WithName("GetVotos");
     }
 
     public static async Task<IResult> CrearVoto(
@@ -79,13 +72,4 @@ public static class VotingEndpoints
         return TypedResults.Ok(response);
     }
 
-    public static async Task<IResult> GetVotos(ClaimsPrincipal user, [FromQuery] int galaId, IVotingService votingService, CancellationToken cancellationToken)
-    {
-        var userIdClaim = user.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!int.TryParse(userIdClaim, out var usuarioId))
-            return TypedResults.Unauthorized();
-
-        var result = await votingService.GetVotosAsync(usuarioId, galaId, cancellationToken);
-        return TypedResults.Ok(result);
-    }
 }
