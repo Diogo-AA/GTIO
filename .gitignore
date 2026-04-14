@@ -523,3 +523,5 @@ override.tf.json
 terraform.rc
 
 .terraform.lock*
+# Terraform binary
+terraform/terraform.exe
