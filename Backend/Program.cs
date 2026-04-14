@@ -56,7 +56,6 @@ builder.Services.AddValidation();
 
 builder.Services.AddMySqlDataSource(builder.Configuration["Db:ConnString"]!);
 
-builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IGalaRepository, GalaRepository>();
 builder.Services.AddScoped<IVotoRepository, VotoRepository>();
 builder.Services.AddScoped<IVotingService, VotingService>();

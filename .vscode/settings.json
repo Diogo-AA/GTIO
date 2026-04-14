@@ -1,3 +1,7 @@
 {
-    "dotnet.defaultSolution": "Backend.slnx"
+  "dotnet.defaultSolution": "Backend.slnx",
+  "sonarlint.connectedMode.project": {
+    "connectionId": "gtio",
+    "projectKey": "Diogo-AA_GTIO"
+  }
 }
