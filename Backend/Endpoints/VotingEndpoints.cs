@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Security.Claims;
 using Backend.Contracts.Requests;
 using Backend.Contracts.Responses;
 using Backend.Services;
