@@ -1,4 +1,4 @@
-# ADR-0007 – Implementación de Auth0 para autenticación y autorización
+# ADR-0009 – Implementación de Auth0 para autenticación y autorización
 
 * Estado: Aceptado  
 * Responsables: Jon Arriazu, Diogo Da Cunha, Cristian Meneses , Javier Toussent Fis

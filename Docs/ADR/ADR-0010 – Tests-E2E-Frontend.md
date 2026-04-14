@@ -1,4 +1,4 @@
-# ADR-0007 – Estrategia de testing del frontend
+# ADR-0010 – Estrategia de testing del frontend
 
 * Estado: Aceptado
 * Responsables: Jon Arriazu, Diogo Da Cunha, Cristian Meneses
