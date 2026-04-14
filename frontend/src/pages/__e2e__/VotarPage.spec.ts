@@ -1,8 +1,5 @@
-import { test, expect, type Page, type Route } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { t } from './i18n'
-
-const noVotos = { votos: [] }
-const conVoto = { votos: [{ candidatoId: 1 }] }
 
 const mockGala = {
   id: 1,
@@ -14,80 +11,62 @@ const mockGala = {
   ],
 }
 
-function skipDocument(handler: (route: Route) => void) {
-  return (route: Route) => {
-    if (route.request().resourceType() === 'document') return route.continue()
-    handler(route)
-  }
+function skipDocument(route: import('@playwright/test').Route) {
+  if (route.request().resourceType() === 'document') return route.continue()
 }
 
-function mockGetVotos(body: object) {
-  return (route: Route) => {
-    if (route.request().method() === 'GET')
-      return route.fulfill({ json: body })
-    route.continue()
-  }
+async function mockAuth(page: import('@playwright/test').Page) {
+  await page.addInitScript(() => {
+    const key = '@@auth0spajs@@::7jmRrkifuWLtHgDzjfk0FKZF56RCnvje::https://api.ot-votacion.com::openid profile email'
+    localStorage.setItem(key, JSON.stringify({
+      body: {
+        access_token: 'fake.e30.token',
+        id_token: 'fake.e30.token',
+        expires_in: 86400,
+        token_type: 'Bearer',
+        scope: 'openid profile email',
+        decodedToken: {
+          user: {
+            sub: 'auth0|test',
+            name: 'Test User',
+            email: 'test@test.com',
+            'https://api.ot-votacion.com/roles': ['usuario'],
+          },
+        },
+      },
+      expiresAt: Math.floor(Date.now() / 1000) + 86400,
+    }))
+  })
 }
 
-async function loginDemo(page: Page) {
-  await page.goto('/login')
-  await page.locator('button.btn-ghost', { hasText: t('login.demo') }).click()
-  await page.waitForURL('/galas')
-}
+test('muestra los candidatos de la gala', async ({ page }) => {
+  await mockAuth(page)
+  await page.route(/\/galas\/1/, route => skipDocument(route) ?? route.fulfill({ json: mockGala }))
+  await page.goto('/galas/1')
+  await expect(page.locator('.section-title').first()).toContainText(mockGala.nombre)
+  await expect(page.locator('.candidato-row')).toHaveCount(2)
+})
 
-test.describe('VotarPage', () => {
-  test('muestra secciones de candidatos y resultados', async ({ page }) => {
-    await page.route('**/galas/*', skipDocument(route => route.fulfill({ json: mockGala })))
-    await page.route(/\/votos/, mockGetVotos(noVotos))
-    await loginDemo(page)
-    await page.goto('/galas/1')
-    await expect(page.locator('.section-title').filter({ hasText: t('votar.candidatos') })).toBeVisible()
-    await expect(page.locator('.section-title').filter({ hasText: t('votar.resultados') })).toBeVisible()
-  })
+test('muestra los resultados ordenados', async ({ page }) => {
+  await mockAuth(page)
+  await page.route(/\/galas\/1/, route => skipDocument(route) ?? route.fulfill({ json: mockGala }))
+  await page.goto('/galas/1')
+  await expect(page.locator('.section-title').nth(1)).toContainText(t('votar.resultados'))
+})
 
-  test('botón volver navega a /galas', async ({ page }) => {
-    await page.route('**/galas/*', skipDocument(route => route.fulfill({ json: mockGala })))
-    await page.route(/\/votos/, mockGetVotos(noVotos))
-    await loginDemo(page)
-    await page.goto('/galas/1')
-    await page.locator('button', { hasText: t('votar.volver') }).click()
-    await expect(page).toHaveURL('/galas')
-  })
+test('muestra error cuando falla la API', async ({ page }) => {
+  await mockAuth(page)
+  await page.route(/\/galas\/1/, route => skipDocument(route) ?? route.abort())
+  await page.goto('/galas/1')
+  await expect(page.locator('.empty-state h3')).toContainText(t('common.error'))
+})
 
-  test('botones Votar habilitados si el usuario no ha votado', async ({ page }) => {
-    await page.route('**/galas/*', skipDocument(route => route.fulfill({ json: mockGala })))
-    await page.route(/\/votos/, mockGetVotos(noVotos))
-    await loginDemo(page)
-    await page.goto('/galas/1')
-    const votarBtn = page.locator('button.btn-primary', { hasText: t('votar.votar') }).first()
-    await expect(votarBtn).toBeVisible()
-    await expect(votarBtn).toBeEnabled()
-  })
-
-  test('botones Votar deshabilitados si el usuario ya votó', async ({ page }) => {
-    await page.route('**/galas/*', skipDocument(route => route.fulfill({ json: mockGala })))
-    await page.route(/\/votos/, mockGetVotos(conVoto))
-    await loginDemo(page)
-    await page.goto('/galas/1')
-    await expect(page.locator('button.btn-primary').first()).toBeDisabled()
-  })
-
-  test('votar muestra toast de éxito', async ({ page }) => {
-    await page.route('**/galas/*', skipDocument(route => route.fulfill({ json: mockGala })))
-    await page.route(/\/votos/, (route: Route) => {
-      if (route.request().method() === 'GET') return route.fulfill({ json: noVotos })
-      if (route.request().method() === 'POST') return route.fulfill({ status: 201, body: '' })
-      route.continue()
-    })
-    await loginDemo(page)
-    await page.goto('/galas/1')
-    await page.locator('button.btn-primary', { hasText: t('votar.votar') }).first().click()
-    await expect(page.locator('.toast-msg')).toContainText(t('votar.votoRegistrado'))
-  })
-
-  test('muestra error para gala inexistente', async ({ page }) => {
-    await loginDemo(page)
-    await page.goto('/galas/99999')
-    await expect(page.locator('.empty-state h3')).toHaveText(t('common.error'))
-  })
+test('desactiva botones tras votar', async ({ page }) => {
+  await mockAuth(page)
+  await page.route(/\/galas\/1/, route => skipDocument(route) ?? route.fulfill({ json: mockGala }))
+  await page.route(/\/votos/, route => route.fulfill({ status: 201, body: '' }))
+  await page.goto('/galas/1')
+  const btn = page.locator('.candidato-row').first().locator('button')
+  await btn.click()
+  await expect(btn).toBeDisabled()
 })

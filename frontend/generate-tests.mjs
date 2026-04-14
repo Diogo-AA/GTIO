@@ -131,8 +131,11 @@ ${i18nHelper}
   Always scope tab selectors to their parent container, e.g. .tabs button or .lang-selector button
 - The app uses react-router with a baseURL of http://localhost:5500
 - Tests run against the live app (http://localhost:5500) — do NOT mock API calls
-- For tests that require authentication, use demo login first:
-    await page.locator('button.btn-ghost', { hasText: t('login.demo') }).click()
+- Authentication is handled by Auth0 Universal Login (external domain). In tests, mock the auth state
+  by injecting a fake token into localStorage before navigating, or use page.route() to intercept
+  requests to Auth0 and return a mocked token. Do NOT attempt to interact with the Auth0 login page.
+- The AuthContext reads the user from auth0Client.getUser() and the token from auth0Client.getTokenSilently().
+  To bypass auth in tests, stub these via page.addInitScript() or mock the API responses directly.
 `;
   }
 
