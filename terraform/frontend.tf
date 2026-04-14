@@ -1,145 +1,39 @@
-# frontend.tf - Infraestructura de hosting estático para el frontend React (S3 + CloudFront)
-
-# ─── S3 ───────────────────────────────────────────────────────────────────────
-
-resource "aws_s3_bucket" "frontend_logs" {
-  bucket = "gtio-frontend-spa-logs"
-  tags   = { Name = "gtio-frontend-logs" }
-}
-
-resource "aws_s3_bucket_public_access_block" "frontend_logs" {
-  bucket                  = aws_s3_bucket.frontend_logs.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
+# frontend.tf - Hosting estático del frontend React en S3
 
 resource "aws_s3_bucket" "frontend" {
   bucket = "gtio-frontend-spa"
   tags   = { Name = "gtio-frontend" }
 }
 
-resource "aws_s3_bucket_logging" "frontend" {
-  bucket        = aws_s3_bucket.frontend.id
-  target_bucket = aws_s3_bucket.frontend_logs.id
-  target_prefix = "s3-access-logs/"
+resource "aws_s3_bucket_website_configuration" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+
+  index_document { suffix = "index.html" }
+  error_document { key = "index.html" }
 }
 
-# El bucket es privado; solo CloudFront puede leer su contenido
+# Permitir acceso público de lectura (necesario para website hosting)
 resource "aws_s3_bucket_public_access_block" "frontend" {
   bucket                  = aws_s3_bucket.frontend.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
 
-# ─── CloudFront ───────────────────────────────────────────────────────────────
-
-# Origin Access Control: permite que CloudFront acceda al bucket sin hacerlo público
-resource "aws_cloudfront_origin_access_control" "frontend" {
-  name                              = "gtio-frontend-oac"
-  origin_access_control_origin_type = "s3"
-  signing_behavior                  = "always"
-  signing_protocol                  = "sigv4"
-}
-
-resource "aws_cloudfront_distribution" "frontend" {
-  origin {
-    domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
-    origin_id                = "S3-gtio-frontend"
-    origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
-  }
-
-  enabled             = true
-  default_root_object = "index.html"
-  price_class         = "PriceClass_100" # Solo Europa y Norteamérica (más económico)
-
-  logging_config {
-    bucket          = aws_s3_bucket.frontend_logs.bucket_domain_name
-    prefix          = "cloudfront-logs/"
-    include_cookies = false
-  }
-
-  default_cache_behavior {
-    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
-    cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "S3-gtio-frontend"
-    viewer_protocol_policy = "redirect-to-https"
-
-    forwarded_values {
-      query_string = false
-      cookies { forward = "none" }
-    }
-
-    min_ttl     = 0
-    default_ttl = 3600
-    max_ttl     = 86400
-  }
-
-  # Las rutas del SPA (ej. /galas, /votos) las maneja React Router,
-  # no existen como archivos en S3, así que CloudFront redirige al index.html
-  custom_error_response {
-    error_code         = 403
-    response_code      = 200
-    response_page_path = "/index.html"
-  }
-
-  custom_error_response {
-    error_code         = 404
-    response_code      = 200
-    response_page_path = "/index.html"
-  }
-
-  restrictions {
-    geo_restriction {
-      restriction_type = "none"
-    }
-  }
-
-  viewer_certificate {
-    cloudfront_default_certificate = true
-  }
-
-  tags = { Name = "gtio-frontend" }
-}
-
-# Política del bucket: solo CloudFront puede leer y todas las peticiones deben usar HTTPS
 resource "aws_s3_bucket_policy" "frontend" {
-  bucket = aws_s3_bucket.frontend.id
+  bucket     = aws_s3_bucket.frontend.id
+  depends_on = [aws_s3_bucket_public_access_block.frontend]
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "AllowCloudFrontAccess"
-        Effect = "Allow"
-        Principal = {
-          Service = "cloudfront.amazonaws.com"
-        }
-        Action   = "s3:GetObject"
-        Resource = "${aws_s3_bucket.frontend.arn}/*"
-        Condition = {
-          StringEquals = {
-            "AWS:SourceArn" = aws_cloudfront_distribution.frontend.arn
-          }
-        }
-      },
-      {
-        Sid       = "DenyHTTP"
-        Effect    = "Deny"
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
         Principal = "*"
-        Action    = "s3:*"
-        Resource = [
-          aws_s3_bucket.frontend.arn,
-          "${aws_s3_bucket.frontend.arn}/*"
-        ]
-        Condition = {
-          Bool = {
-            "aws:SecureTransport" = "false"
-          }
-        }
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.frontend.arn}/*"
       }
     ]
   })

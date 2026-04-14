@@ -16,16 +16,11 @@ output "ssh_command" {
 # ─── Frontend ─────────────────────────────────────────────────────────────────
 
 output "frontend_url" {
-  description = "URL pública del frontend (CloudFront)"
-  value       = "https://${aws_cloudfront_distribution.frontend.domain_name}"
+  description = "URL pública del frontend (S3 website)"
+  value       = "http://${aws_s3_bucket_website_configuration.frontend.website_endpoint}"
 }
 
 output "s3_bucket_name" {
   description = "Nombre del bucket S3 donde se despliegan los archivos del frontend"
   value       = aws_s3_bucket.frontend.id
-}
-
-output "cloudfront_distribution_id" {
-  description = "ID de la distribución CloudFront (necesario para invalidar caché al redesplegar)"
-  value       = aws_cloudfront_distribution.frontend.id
 }
