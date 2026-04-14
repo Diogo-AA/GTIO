@@ -5,7 +5,16 @@ namespace Backend.Services;
 
 public interface IVotingService
 {
-    Task<bool> CrearVotoAsync(string auth0Sub, CrearVotoRequest request, CancellationToken cancellationToken = default);
+    Task<bool> CrearVotoAsync(
+        string auth0Sub,
+        CrearVotoRequest request,
+        CancellationToken cancellationToken = default
+    );
     Task<GetGalasResponse> GetGalasAsync(CancellationToken cancellationToken = default);
     Task<GetGalaResponse?> GetGalaAsync(int id, CancellationToken cancellationToken = default);
+    Task<GetVotosResponse> GetVotosAsync(
+        string usuarioId,
+        int galaId,
+        CancellationToken cancellationToken = default
+    );
 }

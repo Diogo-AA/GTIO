@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "brand": "OT Voting",
+    "galas": "Galak",
+    "usuarios": "Erabiltzaileak",
+    "perfil": "Nire Profila",
+    "salir": "Irten",
+    "iniciarSesion": "Hasi saioa",
+    "conectado": "Egoera: Konektatuta",
+    "desconectado": "Egoera: Deskonektatuta"
+  },
+  "login": {
+    "titulo": "Bozketa Sistema",
+    "iniciarSesion": "Hasi saioa",
+    "crearCuenta": "Sortu kontua",
+    "usuario": "Erabiltzailea",
+    "contrasena": "Pasahitza",
+    "repetirContrasena": "Errepikatu pasahitza",
+    "placeholderUsuario": "Erabiltzaile izena",
+    "placeholderContrasena": "Pasahitza",
+    "placeholderContrasenaMin": "8 karaktere gutxienez",
+    "placeholderRepetir": "Errepikatu pasahitza",
+    "placeholder632": "6–32 karaktere",
+    "entrar": "Sartu",
+    "demo": "Demo sarbidea",
+    "demoInfo": "Erabiltzailea: UsuarioDemo · ID: 1",
+    "contrasenasNoCoinciden": "Pasahitzak ez datoz bat",
+    "cuentaCreada": "Kontua sortuta. Hasi saioa orain.",
+    "bienvenido": "Ongi etorri, {{nombre}}",
+    "modoDemo": "Demo modua aktibatuta"
+  },
+  "galas": {
+    "titulo": "Eskuragarri dauden galak",
+    "actualizar": "↺ Eguneratu",
+    "cargando": "Galak kargatzen...",
+    "sinGalas": "Galarik ez",
+    "sinGalasMensaje": "Oraindik ez dago galarik eskuragarri.",
+    "candidatos": "{{n}} hautagai",
+    "votos": "{{n}} boto",
+    "verDetalle": "Xehetasunak ikusi →",
+    "errorCargar": "Ezin izan dira galak kargatu"
+  },
+  "votar": {
+    "volver": "← Itzuli",
+    "votosTotales": "{{n}} boto guztira",
+    "candidatos": "Hautagaiak",
+    "resultados": "Emaitzak",
+    "votar": "Bozkatu",
+    "votando": "...",
+    "votoRegistrado": "Botoa erregistratuta",
+    "errorCargar": "Ezin izan da gala kargatu",
+    "foto": "Argazkia"
+  },
+  "usuarios": {
+    "titulo": "Erregistratutako erabiltzaileak",
+    "actualizar": "↺ Eguneratu",
+    "cargando": "Kargatzen...",
+    "sinUsuarios": "Erabiltzailerik ez",
+    "id": "ID",
+    "usuario": "Erabiltzailea",
+    "acciones": "Ekintzak",
+    "verHistorial": "Historia ikusi",
+    "errorCargar": "Ezin izan dira erabiltzaileak kargatu"
+  },
+  "modal": {
+    "cargando": "Xehetasunak kargatzen...",
+    "votosEmitidos": "{{n}} boto emititu",
+    "gala": "Gala",
+    "candidato": "Hautagai",
+    "fecha": "Data",
+    "sinVotos": "Erabiltzaile honek oraindik ez du bozkatu."
+  },
+  "perfil": {
+    "titulo": "Nire Profila",
+    "conectadoComo": "Konektatuta honela",
+    "votosEmitidos": "{{n}} boto emititu",
+    "cerrarSesion": "Saioa itxi",
+    "historial": "Botoen historia",
+    "cargando": "Zure profila kargatzen...",
+    "sinVotos": "Oraindik botorik ez",
+    "sinVotosMensaje": "Oraindik ez duzu inongo galan bozkatu.",
+    "gala": "Gala",
+    "candidato": "Hautagai",
+    "fechaVoto": "Botoaren data",
+    "sesionCerrada": "Saioa behar bezala itxi da"
+  },
+  "common": {
+    "cargando": "Kargatzen...",
+    "error": "Errorea",
+    "cerrar": "✕",
+    "activarModoOscuro": "Ilunpeko modua aktibatu",
+    "activarModoClaro": "Argi modua aktibatu"
+  }
+}

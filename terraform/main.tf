@@ -59,7 +59,9 @@ resource "aws_instance" "app" {
   subnet_id     = aws_subnet.public.id
   key_name      = data.aws_key_pair.lab_key.key_name
 
-  associate_public_ip_address = true
+  # IP pública necesaria: esta instancia actúa como API Gateway (Kong en puerto 8000).
+  # El acceso está restringido por backend_sg: solo puertos 8000 (API) y 22 (SSH desde IP fija).
+  associate_public_ip_address = true # nosonar
 
   vpc_security_group_ids = [aws_security_group.backend_sg.id]
 
@@ -106,4 +108,44 @@ resource "aws_instance" "app" {
   tags = {
     Name = "gtio-backend-instance"
   }
+}
+
+# Security group para RDS (acceso MySQL solo desde backend)
+resource "aws_security_group" "rds_sg" {
+  name        = "gtio-rds-sg"
+  description = "Permite MySQL desde el backend"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.backend_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"] # nosonar
+  }
+
+  lifecycle {
+    ignore_changes = all
+  }
+}
+
+# Subredes privadas para RDS
+resource "aws_subnet" "private_1" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-east-1a"
+  tags = { Name = "gtio-private-1" }
+}
+
+resource "aws_subnet" "private_2" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "us-east-1b"
+  tags = { Name = "gtio-private-2" }
 }
