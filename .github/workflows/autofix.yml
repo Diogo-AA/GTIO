@@ -1,0 +1,27 @@
+name: autofix.ci # needed to securely identify the workflow
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+permissions:
+  contents: read
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- AQUÍ LE ENSEÑAMOS A USAR PRETTIER ---
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Instalar dependencias y formatear
+        run: |
+          npm install
+          npx prettier . --write
+      # -----------------------------------------
+
+      - uses: autofix-ci/action@7a166d7532b277f34e16238930461bf77f9d7ed8

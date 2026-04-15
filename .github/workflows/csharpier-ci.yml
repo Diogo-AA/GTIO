@@ -1,0 +1,23 @@
+name: Validate Backend (CSharpier)
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  check_formatting:
+    runs-on: ubuntu-latest
+    name: Check Formatting
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+      
+      - name: Configurar entorno .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x' # Cambia este 8 por un 7 o un 6 si vuestro backend usa una versión anterior
+
+      - name: Restaurar herramientas y validar código
+        run: |
+          dotnet tool restore
+          dotnet csharpier check .

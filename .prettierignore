@@ -1,0 +1,12 @@
+# Ignorar dependencias
+node_modules/
+.terraform/
+
+# Ignorar código backend de C#
+*.cs
+bin/
+obj/
+
+# Ignorar archivos autogenerados
+*.lock.hcl
+package-lock.json
