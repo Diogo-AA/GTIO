@@ -32,12 +32,8 @@ export default function VotarPage() {
     setLoading(true)
     setError(null)
     try {
-      const [data, votosData] = await Promise.all([
-        apiFetch<Gala>(`galas/${id}`),
-        apiFetch<{ votos: { candidatoId: number }[] }>(`votos?galaId=${id}`),
-      ])
+      const data = await apiFetch<Gala>(`galas/${id}`)
       setGala(data)
-      setHaVotado(votosData.votos.length > 0)
     } catch (err: unknown) {
       setError((err as Error).message)
       showToast(t('votar.errorCargar'), 'error')
@@ -57,6 +53,7 @@ export default function VotarPage() {
         body: JSON.stringify({ idCandidato: candidatoId, idGala: gala.id }),
       })
       showToast(t('votar.votoRegistrado'), 'success')
+      setHaVotado(true)
       await loadGala()
     } catch (err: unknown) {
       showToast((err as Error).message, 'error')

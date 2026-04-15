@@ -9,44 +9,29 @@ public class VotingService : IVotingService
     private readonly IVotoRepository _votoRepository;
     private readonly IGalaRepository _galaRepository;
 
-    public VotingService(IVotoRepository votoRepository, IGalaRepository galaRepository)
+    public VotingService(
+        IVotoRepository votoRepository,
+        IGalaRepository galaRepository)
     {
         _votoRepository = votoRepository;
         _galaRepository = galaRepository;
     }
 
-    public async Task<bool> CrearVotoAsync(
-        string auth0Sub,
-        CrearVotoRequest request,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<bool> CrearVotoAsync(string auth0Sub, CrearVotoRequest request, CancellationToken cancellationToken = default)
     {
         var gala = await _galaRepository.GetByIdAsync(request.IdGala, cancellationToken);
         if (gala is null)
             return false;
 
-        var isCandidatoInGala = await _votoRepository.IsCandidatoInGalaAsync(
-            request.IdCandidato,
-            request.IdGala,
-            cancellationToken
-        );
+        var isCandidatoInGala = await _votoRepository.IsCandidatoInGalaAsync(request.IdCandidato, request.IdGala, cancellationToken);
         if (!isCandidatoInGala)
             return false;
 
-        var hasVoted = await _votoRepository.HasUserVotedInGalaAsync(
-            auth0Sub,
-            request.IdGala,
-            cancellationToken
-        );
+        var hasVoted = await _votoRepository.HasUserVotedInGalaAsync(auth0Sub, request.IdGala, cancellationToken);
         if (hasVoted)
             return false;
 
-        await _votoRepository.CrearVotoAsync(
-            auth0Sub,
-            request.IdCandidato,
-            request.IdGala,
-            cancellationToken
-        );
+        await _votoRepository.CrearVotoAsync(auth0Sub, request.IdCandidato, request.IdGala, cancellationToken);
         return true;
     }
 
@@ -56,28 +41,8 @@ public class VotingService : IVotingService
         return new GetGalasResponse { Galas = galas };
     }
 
-    public async Task<GetGalaResponse?> GetGalaAsync(
-        int id,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<GetGalaResponse?> GetGalaAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _galaRepository.GetByIdAsync(id, cancellationToken);
-    }
-
-    public async Task<GetVotosResponse> GetVotosAsync(
-        string usuarioId,
-        int galaId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var candidatos = await _votoRepository.GetCandidatosVotadosAsync(
-            usuarioId,
-            galaId,
-            cancellationToken
-        );
-        return new GetVotosResponse
-        {
-            Votos = candidatos.Select(c => new GetVotoResponse { CandidatoId = c }).ToList(),
-        };
     }
 }
