@@ -145,6 +145,19 @@ resource "aws_instance" "app" {
                     -p"${var.db_password}" \
                     "${var.db_name}" < BBDD/init/02_insertar_datos_iniciales.sql
 
+              # Inicializar esquema y datos en RDS (idempotente gracias a IF NOT EXISTS)
+              mysql -h "${aws_db_instance.mysql.address}" \
+                    -P ${var.db_port} \
+                    -u "${var.db_user}" \
+                    -p"${var.db_password}" \
+                    "${var.db_name}" < BBDD/init/01_crear_estructura_tablas.sql
+
+              mysql -h "${aws_db_instance.mysql.address}" \
+                    -P ${var.db_port} \
+                    -u "${var.db_user}" \
+                    -p"${var.db_password}" \
+                    "${var.db_name}" < BBDD/init/02_insertar_datos_iniciales.sql
+
               chown -R ubuntu:ubuntu /home/ubuntu/GTIO
 
               # Levantar servicios
