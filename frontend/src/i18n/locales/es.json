@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "brand": "OT Voting",
+    "galas": "Galas",
+    "usuarios": "Usuarios",
+    "perfil": "Mi Perfil",
+    "salir": "Salir",
+    "iniciarSesion": "Iniciar Sesión",
+    "conectado": "Estado: Conectado",
+    "desconectado": "Estado: Desconectado"
+  },
+  "login": {
+    "titulo": "Sistema de Votación",
+    "iniciarSesion": "Iniciar sesión",
+    "crearCuenta": "Crear cuenta",
+    "usuario": "Usuario",
+    "contrasena": "Contraseña",
+    "repetirContrasena": "Repetir contraseña",
+    "placeholderUsuario": "Nombre de usuario",
+    "placeholderContrasena": "Contraseña",
+    "placeholderContrasenaMin": "Mínimo 8 caracteres",
+    "placeholderRepetir": "Repite la contraseña",
+    "placeholder632": "6–32 caracteres",
+    "entrar": "Entrar",
+    "demo": "Acceso de demostración",
+    "demoInfo": "Usuario: UsuarioDemo · ID: 1",
+    "contrasenasNoCoinciden": "Las contraseñas no coinciden",
+    "cuentaCreada": "Cuenta creada. Ahora inicia sesión.",
+    "bienvenido": "Bienvenido, {{nombre}}",
+    "modoDemo": "Modo demo activado"
+  },
+  "galas": {
+    "titulo": "Galas disponibles",
+    "actualizar": "↺ Actualizar",
+    "cargando": "Cargando galas...",
+    "sinGalas": "Sin galas",
+    "sinGalasMensaje": "Todavía no hay galas disponibles.",
+    "candidatos": "{{n}} candidatos",
+    "votos": "{{n}} votos",
+    "verDetalle": "Ver detalle →",
+    "errorCargar": "No se pudieron cargar las galas"
+  },
+  "votar": {
+    "volver": "← Volver",
+    "votosTotales": "{{n}} votos totales",
+    "candidatos": "Candidatos",
+    "resultados": "Resultados",
+    "votar": "Votar",
+    "votando": "...",
+    "votoRegistrado": "Voto registrado",
+    "errorCargar": "No se pudo cargar la gala",
+    "foto": "Foto"
+  },
+  "usuarios": {
+    "titulo": "Usuarios registrados",
+    "actualizar": "↺ Actualizar",
+    "cargando": "Cargando...",
+    "sinUsuarios": "Sin usuarios",
+    "id": "ID",
+    "usuario": "Usuario",
+    "acciones": "Acciones",
+    "verHistorial": "Ver historial",
+    "errorCargar": "No se pudieron cargar los usuarios"
+  },
+  "modal": {
+    "cargando": "Cargando detalle...",
+    "votosEmitidos": "{{n}} votos emitidos",
+    "gala": "Gala",
+    "candidato": "Candidato",
+    "fecha": "Fecha",
+    "sinVotos": "Este usuario aún no ha votado."
+  },
+  "perfil": {
+    "titulo": "Mi Perfil",
+    "conectadoComo": "Conectado como",
+    "votosEmitidos": "{{n}} votos emitidos",
+    "cerrarSesion": "Cerrar sesión",
+    "historial": "Historial de votos",
+    "cargando": "Cargando tu perfil...",
+    "sinVotos": "Sin votos todavía",
+    "sinVotosMensaje": "Aún no has votado en ninguna gala.",
+    "gala": "Gala",
+    "candidato": "Candidato",
+    "fechaVoto": "Fecha del voto",
+    "sesionCerrada": "Sesión cerrada correctamente"
+  },
+  "common": {
+    "cargando": "Cargando...",
+    "error": "Error",
+    "cerrar": "✕",
+    "activarModoOscuro": "Activar modo oscuro",
+    "activarModoClaro": "Activar modo claro"
+  }
+}

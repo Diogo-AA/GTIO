@@ -1,4 +1,4 @@
-# Ignorar dependencias
+
 node_modules/
 .terraform/
 
@@ -10,3 +10,6 @@ obj/
 # Ignorar archivos autogenerados
 *.lock.hcl
 package-lock.json
+
+*.md
+ main

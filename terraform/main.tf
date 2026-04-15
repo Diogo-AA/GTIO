@@ -15,6 +15,39 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
+resource "aws_vpc" "main" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+  tags = { Name = "gtio-vpc" }
+}
+
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+  tags   = { Name = "gtio-igw" }
+}
+
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "us-east-1a"
+  tags = { Name = "gtio-public-subnet" }
+}
+
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.main.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+}
+
+resource "aws_route_table_association" "public_assoc" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
 resource "aws_security_group" "backend_sg" {
   name        = "gtio-backend-sg"
   description = "Permitir trafico a Kong y SSH"
@@ -59,14 +92,18 @@ resource "aws_instance" "app" {
   subnet_id     = aws_subnet.public.id
   key_name      = data.aws_key_pair.lab_key.key_name
 
-  associate_public_ip_address = true
+  # IP pública necesaria: esta instancia actúa como API Gateway (Kong en puerto 8000).
+  # El acceso está restringido por backend_sg: solo puertos 8000 (API) y 22 (SSH desde IP fija).
+  associate_public_ip_address = true # nosonar
 
   vpc_security_group_ids = [aws_security_group.backend_sg.id]
 
   user_data = <<-EOF
               #!/bin/bash
+              set -euo pipefail
+
               apt-get update
-              apt-get install -y ca-certificates curl gnupg git
+              apt-get install -y ca-certificates curl gnupg git mysql-client
 
               # Instalar Docker
               install -m 0755 -d /etc/apt/keyrings
@@ -91,11 +128,35 @@ resource "aws_instance" "app" {
               cd GTIO
 
               # Crear archivo de entorno para docker-compose
-              cat << 'ENVFILE' > .env
-              ENVIRONMENT=Production
-              PUERTO_API=8000
-              DB_CONN_STRING=server=${aws_db_instance.mysql.address};port=${var.db_port};uid=${var.db_user};pwd=${var.db_password};database=${var.db_name};
-              ENVFILE
+              echo "ENVIRONMENT=Production" > .env
+              echo "PUERTO_API=8080" >> .env
+              echo "DB_CONN_STRING=server=${aws_db_instance.mysql.address};port=${var.db_port};uid=${var.db_user};pwd=${var.db_password};database=${var.db_name};" >> .env
+
+              # Inicializar esquema y datos en RDS (idempotente gracias a IF NOT EXISTS)
+              mysql -h "${aws_db_instance.mysql.address}" \
+                    -P ${var.db_port} \
+                    -u "${var.db_user}" \
+                    -p"${var.db_password}" \
+                    "${var.db_name}" < BBDD/init/01_crear_estructura_tablas.sql
+
+              mysql -h "${aws_db_instance.mysql.address}" \
+                    -P ${var.db_port} \
+                    -u "${var.db_user}" \
+                    -p"${var.db_password}" \
+                    "${var.db_name}" < BBDD/init/02_insertar_datos_iniciales.sql
+
+              # Inicializar esquema y datos en RDS (idempotente gracias a IF NOT EXISTS)
+              mysql -h "${aws_db_instance.mysql.address}" \
+                    -P ${var.db_port} \
+                    -u "${var.db_user}" \
+                    -p"${var.db_password}" \
+                    "${var.db_name}" < BBDD/init/01_crear_estructura_tablas.sql
+
+              mysql -h "${aws_db_instance.mysql.address}" \
+                    -P ${var.db_port} \
+                    -u "${var.db_user}" \
+                    -p"${var.db_password}" \
+                    "${var.db_name}" < BBDD/init/02_insertar_datos_iniciales.sql
 
               chown -R ubuntu:ubuntu /home/ubuntu/GTIO
 
@@ -106,4 +167,19 @@ resource "aws_instance" "app" {
   tags = {
     Name = "gtio-backend-instance"
   }
+}
+
+# Subredes privadas para RDS
+resource "aws_subnet" "private_1" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-east-1a"
+  tags = { Name = "gtio-private-1" }
+}
+
+resource "aws_subnet" "private_2" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "us-east-1b"
+  tags = { Name = "gtio-private-2" }
 }

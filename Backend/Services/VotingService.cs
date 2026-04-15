@@ -6,37 +6,19 @@ namespace Backend.Services;
 
 public class VotingService : IVotingService
 {
-    private readonly IUsuarioRepository _usuarioRepository;
     private readonly IVotoRepository _votoRepository;
     private readonly IGalaRepository _galaRepository;
 
     public VotingService(
-        IUsuarioRepository usuarioRepository, 
-        IVotoRepository votoRepository, 
+        IVotoRepository votoRepository,
         IGalaRepository galaRepository)
     {
-        _usuarioRepository = usuarioRepository;
         _votoRepository = votoRepository;
         _galaRepository = galaRepository;
     }
 
-    public async Task<GetUsuariosResponse> GetUsuariosAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> CrearVotoAsync(string auth0Sub, CrearVotoRequest request, CancellationToken cancellationToken = default)
     {
-        var usuarios = await _usuarioRepository.GetAllWithVotesAsync(cancellationToken);
-        return new GetUsuariosResponse { Usuarios = usuarios };
-    }
-
-    public async Task<GetUsuarioResponse?> GetUsuarioAsync(int id, CancellationToken cancellationToken = default)
-    {
-        return await _usuarioRepository.GetByIdWithVotesAsync(id, cancellationToken);
-    }
-
-    public async Task<bool> CrearVotoAsync(CrearVotoRequest request, CancellationToken cancellationToken = default)
-    {
-        var usuario = await _usuarioRepository.GetByIdWithVotesAsync(request.IdUsuario, cancellationToken);
-        if (usuario is null)
-            return false;
-
         var gala = await _galaRepository.GetByIdAsync(request.IdGala, cancellationToken);
         if (gala is null)
             return false;
@@ -45,11 +27,11 @@ public class VotingService : IVotingService
         if (!isCandidatoInGala)
             return false;
 
-        var hasVoted = await _votoRepository.HasUserVotedInGalaAsync(request.IdUsuario, request.IdGala, cancellationToken);
+        var hasVoted = await _votoRepository.HasUserVotedInGalaAsync(auth0Sub, request.IdGala, cancellationToken);
         if (hasVoted)
             return false;
 
-        await _votoRepository.CrearVotoAsync(request.IdUsuario, request.IdCandidato, request.IdGala, cancellationToken);
+        await _votoRepository.CrearVotoAsync(auth0Sub, request.IdCandidato, request.IdGala, cancellationToken);
         return true;
     }
 

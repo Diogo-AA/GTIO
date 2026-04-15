@@ -12,3 +12,15 @@ output "ssh_command" {
   description = "Command to SSH into the instance"
   value       = "ssh ubuntu@${aws_instance.app.public_ip}"
 }
+
+# ─── Frontend ─────────────────────────────────────────────────────────────────
+
+output "frontend_url" {
+  description = "URL pública del frontend"
+  value       = "http://${aws_instance.frontend.public_ip}:5500"
+}
+
+output "frontend_ssh_command" {
+  description = "Comando para conectarse por SSH al frontend"
+  value       = "ssh ubuntu@${aws_instance.frontend.public_ip}"
+}
