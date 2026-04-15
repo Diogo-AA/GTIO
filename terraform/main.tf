@@ -100,8 +100,10 @@ resource "aws_instance" "app" {
 
   user_data = <<-EOF
               #!/bin/bash
+              set -euo pipefail
+
               apt-get update
-              apt-get install -y ca-certificates curl gnupg git
+              apt-get install -y ca-certificates curl gnupg git mysql-client
 
               # Instalar Docker
               install -m 0755 -d /etc/apt/keyrings
@@ -131,6 +133,19 @@ resource "aws_instance" "app" {
               PUERTO_API=8000
               DB_CONN_STRING=server=${aws_db_instance.mysql.address};port=${var.db_port};uid=${var.db_user};pwd=${var.db_password};database=${var.db_name};
               ENVFILE
+
+              # Inicializar esquema y datos en RDS (idempotente gracias a IF NOT EXISTS)
+              mysql -h "${aws_db_instance.mysql.address}" \
+                    -P ${var.db_port} \
+                    -u "${var.db_user}" \
+                    -p"${var.db_password}" \
+                    "${var.db_name}" < BBDD/init/01_crear_estructura_tablas.sql
+
+              mysql -h "${aws_db_instance.mysql.address}" \
+                    -P ${var.db_port} \
+                    -u "${var.db_user}" \
+                    -p"${var.db_password}" \
+                    "${var.db_name}" < BBDD/init/02_insertar_datos_iniciales.sql
 
               chown -R ubuntu:ubuntu /home/ubuntu/GTIO
 
