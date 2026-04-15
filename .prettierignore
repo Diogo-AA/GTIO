@@ -1,6 +1,7 @@
 
 node_modules/
 .terraform/
+.github/
 
 # Ignorar código backend de C#
 *.cs
