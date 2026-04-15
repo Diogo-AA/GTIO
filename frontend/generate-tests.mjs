@@ -1,4 +1,4 @@
-import 'dotenv/config'
+import "dotenv/config";
 import Groq from "groq-sdk";
 import fs from "fs/promises";
 import path from "path";
@@ -88,11 +88,11 @@ async function callGroq(prompt) {
 
 async function loadE2EContext() {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const localesDir = path.join(__dirname, 'src/i18n/locales');
-  const i18nHelperPath = path.join(__dirname, 'src/pages/__e2e__/i18n.ts');
+  const localesDir = path.join(__dirname, "src/i18n/locales");
+  const i18nHelperPath = path.join(__dirname, "src/pages/__e2e__/i18n.ts");
   const [esJson, i18nHelper] = await Promise.all([
-    fs.readFile(path.join(localesDir, 'es.json'), 'utf-8'),
-    fs.readFile(i18nHelperPath, 'utf-8'),
+    fs.readFile(path.join(localesDir, "es.json"), "utf-8"),
+    fs.readFile(i18nHelperPath, "utf-8"),
   ]);
   return { esJson, i18nHelper };
 }
@@ -109,8 +109,8 @@ async function generateTests(sourceFile, options = {}) {
 
   console.log(`🎯 Test type detected: ${testType} (${strategy.framework})`);
 
-  let e2eContext = '';
-  if (testType === 'e2e') {
+  let e2eContext = "";
+  if (testType === "e2e") {
     const { esJson, i18nHelper } = await loadE2EContext();
     e2eContext = `
 ## i18n translations (es.json)
@@ -160,7 +160,10 @@ Generate a complete, production-ready test file. Requirements:
   console.log(`⏳ Calling Groq API...`);
 
   let generatedTests = await callGroq(prompt);
-  generatedTests = generatedTests.replace(/^```[\w]*\n?/gm, "").replace(/```$/gm, "").trim();
+  generatedTests = generatedTests
+    .replace(/^```[\w]*\n?/gm, "")
+    .replace(/```$/gm, "")
+    .trim();
 
   const outputPath = getTestOutputPath(sourceFile, testType);
 
@@ -187,7 +190,7 @@ async function runTests(outputPath, testType) {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   let bin, args;
   if (testType === "e2e") {
-    const normalizedPath = outputPath.replace(/\\/g, '/');
+    const normalizedPath = outputPath.replace(/\\/g, "/");
     bin = path.join(__dirname, "node_modules", ".bin", "playwright");
     args = ["test", normalizedPath, "--reporter=line"];
   } else {
@@ -236,7 +239,10 @@ ${failureOutput}
 Return ONLY the corrected test file contents. No markdown, no explanation, no code fences.`;
 
   let fixedTests = await callGroq(prompt);
-  fixedTests = fixedTests.replace(/^```[\w]*\n?/gm, "").replace(/```$/gm, "").trim();
+  fixedTests = fixedTests
+    .replace(/^```[\w]*\n?/gm, "")
+    .replace(/```$/gm, "")
+    .trim();
 
   await fs.writeFile(testFile, fixedTests, "utf-8");
   console.log(`   Updated: ${testFile}`);
@@ -249,7 +255,7 @@ async function agentLoop(sourceFile, options = {}) {
 
   const { outputPath, testType, dryRun } = await generateTests(
     sourceFile,
-    generateOptions
+    generateOptions,
   );
 
   if (skipRun || dryRun) {
@@ -268,7 +274,7 @@ async function agentLoop(sourceFile, options = {}) {
 
   if (!result.success) {
     console.error(
-      `\n💥 Tests still failing after ${maxRetries} fix attempts. Manual review needed.`
+      `\n💥 Tests still failing after ${maxRetries} fix attempts. Manual review needed.`,
     );
     process.exit(1);
   }
