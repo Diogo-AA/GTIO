@@ -75,12 +75,14 @@ export default function Navbar() {
         ) : (
           <>
             <span className="estado-chip offline">{t("nav.desconectado")}</span>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => navigate("/login")}
-            >
-              {t("nav.iniciarSesion")}
-            </button>
+            {location.pathname !== "/login" && (
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => navigate("/login")}
+              >
+                {t("nav.iniciarSesion")}
+              </button>
+            )}
           </>
         )}
       </div>
