@@ -108,4 +108,8 @@ resource "aws_instance" "frontend" {
   tags = {
     Name = "gtio-frontend-instance"
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
