@@ -69,7 +69,7 @@ resource "aws_instance" "frontend" {
               cd GTIO
 
               # Variables de entorno para build del frontend
-              echo "VITE_API_BASE=https://${aws_instance.app.public_ip}" > .env
+              echo "VITE_API_BASE=http://${aws_instance.app.public_ip}:8000" > .env
               echo "VITE_AUTH0_DOMAIN=dev-bd8co7uzp2no173l.us.auth0.com" >> .env
               echo "VITE_AUTH0_CLIENT_ID=7jmRrkifuWLtHgDzjfk0FKZF56RCnvje" >> .env
               echo "VITE_AUTH0_AUDIENCE=https://api.ot-votacion.com" >> .env
