@@ -188,6 +188,12 @@ resource "aws_instance" "app" {
                 echo '        proxy_pass http://localhost:8000;'
                 echo '        proxy_set_header Host $host;'
                 echo '        proxy_set_header X-Real-IP $remote_addr;'
+                echo '        add_header Access-Control-Allow-Origin "*" always;'
+                echo '        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;'
+                echo '        add_header Access-Control-Allow-Headers "Authorization, Content-Type" always;'
+                echo '        if ($request_method = OPTIONS) {'
+                echo '            return 204;'
+                echo '        }'
                 echo '    }'
                 echo '}'
               } > /etc/nginx/sites-available/backend
