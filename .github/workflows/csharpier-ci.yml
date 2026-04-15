@@ -15,7 +15,7 @@ jobs:
       - name: Configurar entorno .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x' # Cambia este 8 por un 7 o un 6 si vuestro backend usa una versión anterior
+          dotnet-version: '10.0.x' # Alineado con el target framework net10.0 del backend
 
       - name: Restaurar herramientas y validar código
         run: |
