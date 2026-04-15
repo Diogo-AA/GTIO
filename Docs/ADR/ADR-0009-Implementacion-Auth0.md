@@ -1,7 +1,7 @@
 # ADR-0009 – Implementación de Auth0 para autenticación y autorización
 
 * Estado: Aceptado  
-* Responsables: Jon Arriazu, Diogo Da Cunha, Cristian Meneses , Javier Toussent Fis
+* Responsables: Jon Arriazu, Diogo Da Cunha, Cristian Meneses, Javier Toussent Fis
 * Fecha: 2026-04-14  
 
 Historia técnica: Selección del sistema de autenticación para el backend y su integración con la API.
