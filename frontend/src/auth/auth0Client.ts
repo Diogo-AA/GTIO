@@ -1,4 +1,4 @@
-import { Auth0Client } from '@auth0/auth0-spa-js'
+import { Auth0Client } from "@auth0/auth0-spa-js";
 
 export const auth0Client = new Auth0Client({
   domain: import.meta.env.VITE_AUTH0_DOMAIN as string,
@@ -7,5 +7,5 @@ export const auth0Client = new Auth0Client({
     audience: import.meta.env.VITE_AUTH0_AUDIENCE as string,
     redirect_uri: window.location.origin,
   },
-  cacheLocation: 'localstorage',
-})
+  cacheLocation: "localstorage",
+});

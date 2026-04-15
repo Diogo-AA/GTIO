@@ -1,1 +1,16 @@
+
+node_modules/
+.terraform/
+.github/
+
+# Ignorar código backend de C#
+*.cs
+bin/
+obj/
+
+# Ignorar archivos autogenerados
+*.lock.hcl
+package-lock.json
+
 *.md
+ main

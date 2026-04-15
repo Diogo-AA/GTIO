@@ -1,0 +1,24 @@
+name: Validate Backend (CSharpier)
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  check_formatting:
+    runs-on: ubuntu-latest
+    name: Check Formatting
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+      
+      - name: Configurar entorno .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x' # Alineado con el target framework net10.0 del backend
+
+      - name: Instalar CSharpier y validar código
+        run: |
+          dotnet tool install --global CSharpier
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+          dotnet csharpier check .
