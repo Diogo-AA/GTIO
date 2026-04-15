@@ -69,6 +69,14 @@ resource "aws_security_group" "backend_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "HTTPS proxy to Kong"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -162,6 +170,31 @@ resource "aws_instance" "app" {
 
               # Levantar servicios
               docker compose up -d kong-dbless backend
+
+              # Nginx como proxy HTTPS:443 -> Kong:8000
+              apt-get install -y nginx openssl
+              mkdir -p /etc/nginx/ssl
+              openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout /etc/nginx/ssl/selfsigned.key \
+                -out /etc/nginx/ssl/selfsigned.crt \
+                -subj "/CN=gtio-backend"
+
+              {
+                echo 'server {'
+                echo '    listen 443 ssl;'
+                echo '    ssl_certificate /etc/nginx/ssl/selfsigned.crt;'
+                echo '    ssl_certificate_key /etc/nginx/ssl/selfsigned.key;'
+                echo '    location / {'
+                echo '        proxy_pass http://localhost:8000;'
+                echo '        proxy_set_header Host $host;'
+                echo '        proxy_set_header X-Real-IP $remote_addr;'
+                echo '    }'
+                echo '}'
+              } > /etc/nginx/sites-available/backend
+
+              ln -sf /etc/nginx/sites-available/backend /etc/nginx/sites-enabled/backend
+              rm -f /etc/nginx/sites-enabled/default
+              systemctl restart nginx
               EOF
 
   tags = {
