@@ -32,7 +32,7 @@ resource "aws_security_group" "rds_sg" {
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
-    # Magia de Terraform: Permitimos el paso SOLO a quien tenga el escudo del backend
+
     security_groups = [aws_security_group.backend_sg.id] 
   }
 
