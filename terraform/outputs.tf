@@ -1,15 +1,20 @@
 output "instance_public_ip" {
-  description = "Public IP of the EC2 instance"
+  description = "IP pública de la EC2 del backend (solo SSH)"
   value       = aws_instance.app.public_ip
 }
 
+output "alb_dns_name" {
+  description = "DNS público del ALB (punto de entrada de la API)"
+  value       = aws_lb.app.dns_name
+}
+
 output "api_url" {
-  description = "Kong API Gateway URL"
-  value       = "http://${aws_instance.app.public_ip}:8000"
+  description = "URL pública de la API a través del ALB"
+  value       = "http://${aws_lb.app.dns_name}"
 }
 
 output "ssh_command" {
-  description = "Command to SSH into the instance"
+  description = "Comando para conectarse por SSH a la EC2 del backend"
   value       = "ssh ubuntu@${aws_instance.app.public_ip}"
 }
 
