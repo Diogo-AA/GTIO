@@ -1,5 +1,9 @@
 # frontend.tf - EC2 para el frontend React
 
+data "aws_key_pair" "lab_key" {
+  key_name = "vockey"
+}
+
 resource "aws_security_group" "frontend_sg" {
   name        = "gtio-frontend-sg"
   description = "Permitir trafico HTTPS y SSH al frontend"
@@ -69,7 +73,7 @@ resource "aws_instance" "frontend" {
               cd GTIO
 
               # Variables de entorno para build del frontend
-              echo "VITE_API_BASE=https://${aws_instance.app.public_ip}" > .env
+              echo "VITE_API_BASE=http://${aws_lb.app.dns_name}" > .env
               echo "VITE_AUTH0_DOMAIN=dev-bd8co7uzp2no173l.us.auth0.com" >> .env
               echo "VITE_AUTH0_CLIENT_ID=7jmRrkifuWLtHgDzjfk0FKZF56RCnvje" >> .env
               echo "VITE_AUTH0_AUDIENCE=https://api.ot-votacion.com" >> .env

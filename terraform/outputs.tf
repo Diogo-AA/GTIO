@@ -1,6 +1,11 @@
-output "instance_public_ip" {
-  description = "IP pública de la EC2 del backend (solo SSH)"
-  value       = aws_instance.app.public_ip
+output "ecr_repository_url" {
+  description = "URL del repositorio ECR para el backend"
+  value       = aws_ecr_repository.backend.repository_url
+}
+
+output "ecs_cluster_name" {
+  description = "Nombre del cluster ECS"
+  value       = aws_ecs_cluster.main.name
 }
 
 output "alb_dns_name" {
@@ -11,11 +16,6 @@ output "alb_dns_name" {
 output "api_url" {
   description = "URL pública de la API a través del ALB"
   value       = "http://${aws_lb.app.dns_name}"
-}
-
-output "ssh_command" {
-  description = "Comando para conectarse por SSH a la EC2 del backend"
-  value       = "ssh ubuntu@${aws_instance.app.public_ip}"
 }
 
 # ─── Frontend ─────────────────────────────────────────────────────────────────

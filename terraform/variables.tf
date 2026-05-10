@@ -5,28 +5,20 @@ variable "aws_region" {
 }
 
 variable "instance_type" {
-  description = "EC2 instance type for the Docker host"
+  description = "EC2 instance type for the Frontend Docker host"
   type        = string
   default     = "t3.small"
 }
 
-variable "db_host" {
-  description = "Host de la Base de Datos Externa"
-  type        = string
-  default     = "bbdd_votacion_mysql"
-}
-
 variable "db_user" {
-  description = "Usuario de la Base de Datos Externa"
+  description = "Usuario de la Base de Datos RDS"
   type        = string
-  default     = "user"
 }
 
 variable "db_password" {
-  description = "Contraseña de la Base de Datos Externa"
+  description = "Contraseña de la Base de Datos RDS"
   type        = string
   sensitive   = true
-  default     = "pass"
 }
 
 variable "db_name" {
@@ -36,17 +28,26 @@ variable "db_name" {
 }
 
 variable "db_port" {
-  description = "Puerto de la Base de Datos Externa"
+  description = "Puerto de la Base de Datos RDS"
   type        = number
   default     = 3306
 }
 
-variable "public_key" {
-  description = "Clave SSH publica para acceder a la EC2"
+variable "backend_image_tag" {
+  description = "Tag de la imagen del backend en ECR"
   type        = string
+  default     = "latest"
+}
+
+# Variables legacy de Terraform Cloud (no se usan pero siguen configuradas)
+variable "public_key" {
+  description = "Deprecated - no longer used"
+  type        = string
+  default     = ""
 }
 
 variable "allowed_ssh_cidr" {
-  description = "IP permitida para acceder por SSH"
+  description = "Deprecated - no longer used"
   type        = string
+  default     = ""
 }
