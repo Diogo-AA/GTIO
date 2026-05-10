@@ -60,7 +60,7 @@ resource "aws_lb_target_group" "backend" {
   name        = "gtio-backend-tg"
   port        = 8000
   protocol    = "HTTP"
-  target_type = "instance"
+  target_type = "ip"
   vpc_id      = aws_vpc.main.id
 
   health_check {
@@ -73,14 +73,6 @@ resource "aws_lb_target_group" "backend" {
   }
 
   tags = { Name = "gtio-backend-tg" }
-}
-
-# Registramos la EC2 actual del backend en el TG
-# ESTO Habra que cambiar en la migración 
-resource "aws_lb_target_group_attachment" "backend" {
-  target_group_arn = aws_lb_target_group.backend.arn
-  target_id        = aws_instance.app.id
-  port             = 8000
 }
 
 # Listener HTTP:80 -> reenvia al tg

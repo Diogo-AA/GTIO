@@ -33,7 +33,7 @@ resource "aws_security_group" "rds_sg" {
     to_port     = 3306
     protocol    = "tcp"
 
-    security_groups = [aws_security_group.backend_sg.id]
+    security_groups = [aws_security_group.ecs_task_sg.id]
   }
 
   egress {
@@ -41,9 +41,5 @@ resource "aws_security_group" "rds_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"] # nosonar
-  }
-
-  lifecycle {
-    ignore_changes = all
   }
 }
