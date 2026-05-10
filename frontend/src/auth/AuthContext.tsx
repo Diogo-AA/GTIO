@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { auth0Client } from "./auth0Client";
+import { Logger } from "../utils/logger/Logger";
 
 const ROLES_CLAIM = "https://api.ot-votacion.com/roles";
 
@@ -50,10 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function init() {
       try {
+        Logger.debug("[Auth] Initializing authentication");
         if (
           window.location.search.includes("code=") &&
           window.location.search.includes("state=")
         ) {
+          Logger.info("[Auth] Handling redirect callback");
           await auth0Client.handleRedirectCallback();
           window.history.replaceState(
             {},
@@ -66,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsAuthenticated(authenticated);
 
         if (authenticated) {
+          Logger.info("[Auth] User is authenticated, fetching profile");
           const [auth0User, token] = await Promise.all([
             auth0Client.getUser(),
             auth0Client.getTokenSilently(),
@@ -78,7 +82,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               auth0User?.name ?? auth0User?.email ?? auth0User?.nickname ?? "",
             roles,
           });
+          Logger.debug("[Auth] Profile loaded successfully");
+        } else {
+          Logger.debug("[Auth] User is not authenticated");
         }
+      } catch (err: any) {
+        Logger.error(`[Auth] Initialization failed: ${err.message}`, {
+          error: err,
+        });
       } finally {
         setIsLoading(false);
       }
@@ -87,10 +98,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function login() {
+    Logger.info("[Auth] Triggering login redirect");
     await auth0Client.loginWithRedirect();
   }
 
   async function logout() {
+    Logger.info("[Auth] Triggering logout");
     setUser(null);
     setIsAuthenticated(false);
     await auth0Client.logout({

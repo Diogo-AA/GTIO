@@ -8,8 +8,13 @@ using MySqlConnector;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+
 // Autenticación con Auth0
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder
+    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.Authority = $"https://{builder.Configuration["Auth0:Domain"]}/";
@@ -21,34 +26,34 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
-            RoleClaimType = "https://api.ot-votacion.com/roles"
+            RoleClaimType = "https://api.ot-votacion.com/roles",
         };
     });
 
 // Políticas de autorización
-builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("Admin", policy =>
-        policy.RequireRole("admin"))
-    .AddPolicy("Usuario", policy =>
-        policy.RequireRole("usuario", "admin"));
+builder
+    .Services.AddAuthorizationBuilder()
+    .AddPolicy("Admin", policy => policy.RequireRole("admin"))
+    .AddPolicy("Usuario", policy => policy.RequireRole("usuario", "admin"));
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        Description = "Token JWT de Auth0"
-    });
-    options.AddSecurityRequirement(document =>
-        new OpenApiSecurityRequirement
+    options.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme
         {
-            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "Token JWT de Auth0",
         }
     );
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = [],
+    });
 });
 builder.Services.AddEndpointsApiExplorer();
 
@@ -73,4 +78,5 @@ app.UseAuthorization();
 
 app.MapVotingEndpoints();
 
+app.Logger.LogInformation("Application starting...");
 app.Run();
