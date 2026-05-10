@@ -19,7 +19,7 @@ resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = { Name = "gtio-vpc" }
+  tags                 = { Name = "gtio-vpc" }
 }
 
 resource "aws_internet_gateway" "igw" {
@@ -32,7 +32,7 @@ resource "aws_subnet" "public" {
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
   availability_zone       = "us-east-1a"
-  tags = { Name = "gtio-public-subnet" }
+  tags                    = { Name = "gtio-public-subnet" }
 }
 
 resource "aws_route_table" "public_rt" {
@@ -50,7 +50,7 @@ resource "aws_route_table_association" "public_assoc" {
 
 resource "aws_security_group" "backend_sg" {
   name        = "gtio-backend-sg"
-  description = "Permitir trafico a Kong y SSH"
+  description = "Permitir trafico a Kong desde el ALB y SSH desde IP propia"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -58,23 +58,15 @@ resource "aws_security_group" "backend_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.allowed_ssh_cidr]
   }
 
   ingress {
-    description = "Kong Gateway API"
-    from_port   = 8000
-    to_port     = 8000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "HTTPS proxy to Kong"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description     = "Kong desde el ALB"
+    from_port       = 8000
+    to_port         = 8000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
   }
 
   egress {
@@ -90,8 +82,7 @@ resource "aws_security_group" "backend_sg" {
 }
 
 data "aws_key_pair" "lab_key" {
-  key_name   = "vockey"
-
+  key_name = "vockey"
 }
 
 resource "aws_instance" "app" {
@@ -100,8 +91,7 @@ resource "aws_instance" "app" {
   subnet_id     = aws_subnet.public.id
   key_name      = data.aws_key_pair.lab_key.key_name
 
-  # IP pública necesaria: esta instancia actúa como API Gateway (Kong en puerto 8000).
-  # El acceso está restringido por backend_sg: solo puertos 8000 (API) y 22 (SSH desde IP fija).
+  # IP pública necesaria solo para SSH; el tráfico de la API entra por el ALB.
   associate_public_ip_address = true # nosonar
 
   vpc_security_group_ids = [aws_security_group.backend_sg.id]
@@ -153,54 +143,10 @@ resource "aws_instance" "app" {
                     -p"${var.db_password}" \
                     "${var.db_name}" < BBDD/init/02_insertar_datos_iniciales.sql
 
-              # Inicializar esquema y datos en RDS (idempotente gracias a IF NOT EXISTS)
-              mysql -h "${aws_db_instance.mysql.address}" \
-                    -P ${var.db_port} \
-                    -u "${var.db_user}" \
-                    -p"${var.db_password}" \
-                    "${var.db_name}" < BBDD/init/01_crear_estructura_tablas.sql
-
-              mysql -h "${aws_db_instance.mysql.address}" \
-                    -P ${var.db_port} \
-                    -u "${var.db_user}" \
-                    -p"${var.db_password}" \
-                    "${var.db_name}" < BBDD/init/02_insertar_datos_iniciales.sql
-
               chown -R ubuntu:ubuntu /home/ubuntu/GTIO
 
               # Levantar servicios
               docker compose up -d kong-dbless backend
-
-              # Nginx como proxy HTTPS:443 -> Kong:8000
-              apt-get install -y nginx openssl
-              mkdir -p /etc/nginx/ssl
-              openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-                -keyout /etc/nginx/ssl/selfsigned.key \
-                -out /etc/nginx/ssl/selfsigned.crt \
-                -subj "/CN=gtio-backend"
-
-              {
-                echo 'server {'
-                echo '    listen 443 ssl;'
-                echo '    ssl_certificate /etc/nginx/ssl/selfsigned.crt;'
-                echo '    ssl_certificate_key /etc/nginx/ssl/selfsigned.key;'
-                echo '    location / {'
-                echo '        proxy_pass http://localhost:8000;'
-                echo '        proxy_set_header Host $host;'
-                echo '        proxy_set_header X-Real-IP $remote_addr;'
-                echo '        add_header Access-Control-Allow-Origin "*" always;'
-                echo '        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;'
-                echo '        add_header Access-Control-Allow-Headers "Authorization, Content-Type" always;'
-                echo '        if ($request_method = OPTIONS) {'
-                echo '            return 204;'
-                echo '        }'
-                echo '    }'
-                echo '}'
-              } > /etc/nginx/sites-available/backend
-
-              ln -sf /etc/nginx/sites-available/backend /etc/nginx/sites-enabled/backend
-              rm -f /etc/nginx/sites-enabled/default
-              systemctl restart nginx
               EOF
 
   tags = {
@@ -213,12 +159,12 @@ resource "aws_subnet" "private_1" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.2.0/24"
   availability_zone = "us-east-1a"
-  tags = { Name = "gtio-private-1" }
+  tags              = { Name = "gtio-private-1" }
 }
 
 resource "aws_subnet" "private_2" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.3.0/24"
   availability_zone = "us-east-1b"
-  tags = { Name = "gtio-private-2" }
+  tags              = { Name = "gtio-private-2" }
 }
