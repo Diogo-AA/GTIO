@@ -38,16 +38,3 @@ variable "backend_image_tag" {
   type        = string
   default     = "latest"
 }
-
-# Variables legacy de Terraform Cloud (no se usan pero siguen configuradas)
-variable "public_key" {
-  description = "Deprecated - no longer used"
-  type        = string
-  default     = ""
-}
-
-variable "allowed_ssh_cidr" {
-  description = "Deprecated - no longer used"
-  type        = string
-  default     = ""
-}
