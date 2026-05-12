@@ -3,6 +3,7 @@ using Backend.Contracts.Responses;
 using Backend.Data;
 using Backend.Services;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace Backend.Tests.Unit.Services;
@@ -11,13 +12,15 @@ public class VotingServiceTests
 {
     private readonly IVotoRepository _votoRepository;
     private readonly IGalaRepository _galaRepository;
+    private readonly ILogger<VotingService> _logger;
     private readonly VotingService _sut;
 
     public VotingServiceTests()
     {
         _votoRepository = Substitute.For<IVotoRepository>();
         _galaRepository = Substitute.For<IGalaRepository>();
-        _sut = new VotingService(_votoRepository, _galaRepository);
+        _logger = Substitute.For<ILogger<VotingService>>();
+        _sut = new VotingService(_votoRepository, _galaRepository, _logger);
     }
 
     //CrearVotoAsync
