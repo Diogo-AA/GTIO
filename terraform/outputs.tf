@@ -29,3 +29,12 @@ output "frontend_ssh_command" {
   description = "Comando para conectarse por SSH al frontend"
   value       = "ssh ubuntu@${aws_instance.frontend.public_ip}"
 }
+output "dashboard_url" {
+  description = "URL del dashboard de CloudWatch"
+  value       = "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=${aws_cloudwatch_dashboard.overview.dashboard_name}"
+}
+
+output "alarms_topic_arn" {
+  description = "ARN del SNS topic de alarmas"
+  value       = aws_sns_topic.alarms.arn
+}

@@ -38,3 +38,7 @@ variable "backend_image_tag" {
   type        = string
   default     = "latest"
 }
+variable "alarm_email" {
+  description = "Email al que se envían las notificaciones de alarmas CloudWatch"
+  type        = string
+}
