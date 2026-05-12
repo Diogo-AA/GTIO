@@ -12,10 +12,17 @@ internal sealed class GroqTestGenerator
     public GroqTestGenerator(string apiKey)
     {
         _httpClient = new HttpClient();
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            apiKey
+        );
     }
 
-    public async Task<string> GenerateTestsAsync(string userPrompt, string model, decimal temperature)
+    public async Task<string> GenerateTestsAsync(
+        string userPrompt,
+        string model,
+        decimal temperature
+    )
     {
         var requestBody = new
         {
@@ -46,14 +53,10 @@ Reglas:
 - Mantén el código simple y legible.
 - No inventes tipos que no aparezcan o no se deduzcan razonablemente del código.
 - Si falta contexto para algunos tipos, genera el mejor borrador posible sin comentarios explicativos.
-"""
+""",
                 },
-                new
-                {
-                    role = "user",
-                    content = userPrompt
-                }
-            }
+                new { role = "user", content = userPrompt },
+            },
         };
 
         var json = JsonSerializer.Serialize(requestBody);
@@ -65,7 +68,8 @@ Reglas:
         if (!response.IsSuccessStatusCode)
         {
             throw new InvalidOperationException(
-                $"Groq devolvió {(int)response.StatusCode} {response.ReasonPhrase}. Respuesta: {responseText}");
+                $"Groq devolvió {(int)response.StatusCode} {response.ReasonPhrase}. Respuesta: {responseText}"
+            );
         }
 
         using var doc = JsonDocument.Parse(responseText);
@@ -83,7 +87,9 @@ Reglas:
 
         if (string.IsNullOrWhiteSpace(generated))
         {
-            throw new InvalidOperationException("La respuesta de Groq no contiene contenido generado.");
+            throw new InvalidOperationException(
+                "La respuesta de Groq no contiene contenido generado."
+            );
         }
 
         return CleanOutput(generated);

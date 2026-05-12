@@ -5,14 +5,18 @@ internal static class PromptBuilder
     public static string Build(
         string sourceCode,
         string fileName,
-        Dictionary<string, string> additionalContext)
+        Dictionary<string, string> additionalContext
+    )
     {
         var contextBlocks = string.Join(
             "\n\n",
-            additionalContext.Select(kvp => $$"""
+            additionalContext.Select(kvp =>
+                $$"""
 Archivo de contexto: {{kvp.Key}}
 {{kvp.Value}}
-"""));
+"""
+            )
+        );
 
         return $$"""
 Genera tests unitarios en C# para el siguiente archivo del proyecto.
@@ -51,7 +55,8 @@ Contexto adicional del proyecto:
     public static string BuildRepairPrompt(
         string originalPrompt,
         string generatedCode,
-        string compilerErrors)
+        string compilerErrors
+    )
     {
         return $$"""
 Has generado unos tests unitarios en C# que no compilan.
