@@ -6,6 +6,7 @@ on:
     paths:
       - "Backend/**"
       - ".github/workflows/deploy-aws.yml"
+  workflow_dispatch: # Permite lanzarlo manualmente desde GitHub Actions
 
 env:
   AWS_REGION: us-east-1
