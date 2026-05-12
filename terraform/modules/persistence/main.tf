@@ -1,15 +1,13 @@
-# rds.tf - Base de Datos MySQL
-
 resource "aws_db_subnet_group" "rds_group" {
-  name       = "gtio-rds-subnets"
-  subnet_ids = [aws_subnet.private_1.id, aws_subnet.private_2.id]
+  name       = "gtio-rds-subnets-${var.environment}"
+  subnet_ids = var.private_subnet_ids
 }
 
 resource "aws_db_instance" "mysql" {
-  identifier              = "gtio-db-votacion"
+  identifier              = "gtio-db-votacion-${var.environment}"
   engine                  = "mysql"
   engine_version          = "8.0"
-  instance_class          = "db.t3.micro" # Capa gratuita
+  instance_class          = var.instance_class
   allocated_storage       = 20
   storage_encrypted       = true
   backup_retention_period = 7
@@ -23,17 +21,16 @@ resource "aws_db_instance" "mysql" {
 }
 
 resource "aws_security_group" "rds_sg" {
-  name        = "gtio-rds-sg"
+  name        = "gtio-rds-sg-${var.environment}"
   description = "Permitir trafico MySQL desde el backend"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.vpc_id
 
   ingress {
-    description = "Acceso MySQL solo desde el Backend"
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-
-    security_groups = [aws_security_group.ecs_task_sg.id]
+    description     = "Acceso MySQL"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = var.allowed_security_group_ids
   }
 
   egress {
