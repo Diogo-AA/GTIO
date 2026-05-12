@@ -1,8 +1,7 @@
 # SNS Topic para notificaciones de alarmas
-
 resource "aws_sns_topic" "alarms" {
-  name = "gtio-alarms"
-  tags = { Name = "gtio-alarms" }
+  name = "gtio-alarms-${var.environment}"
+  tags = { Name = "gtio-alarms-${var.environment}" }
 }
 
 resource "aws_sns_topic_subscription" "alarms_email" {
@@ -12,9 +11,8 @@ resource "aws_sns_topic_subscription" "alarms_email" {
 }
 
 # Dashboard
-
 resource "aws_cloudwatch_dashboard" "overview" {
-  dashboard_name = "gtio-overview"
+  dashboard_name = "gtio-overview-${var.environment}"
 
   dashboard_body = jsonencode({
     widgets = [
@@ -31,7 +29,7 @@ resource "aws_cloudwatch_dashboard" "overview" {
           stat   = "Sum"
           period = 60
           metrics = [
-            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", aws_lb.app.arn_suffix],
+            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix],
             [".", "HTTPCode_Target_2XX_Count", ".", "."],
             [".", "HTTPCode_Target_4XX_Count", ".", "."],
             [".", "HTTPCode_Target_5XX_Count", ".", "."]
@@ -50,7 +48,7 @@ resource "aws_cloudwatch_dashboard" "overview" {
           view   = "timeSeries"
           period = 60
           metrics = [
-            ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", aws_lb.app.arn_suffix, { stat = "p50" }],
+            ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", var.alb_arn_suffix, { stat = "p50" }],
             ["...", { stat = "p95" }],
             ["...", { stat = "p99" }]
           ]
@@ -68,7 +66,7 @@ resource "aws_cloudwatch_dashboard" "overview" {
           view   = "timeSeries"
           period = 60
           metrics = [
-            ["AWS/ECS", "CPUUtilization", "ServiceName", "gtio-app-svc", "ClusterName", "gtio-cluster", { stat = "Average" }],
+            ["AWS/ECS", "CPUUtilization", "ServiceName", var.ecs_service_name, "ClusterName", var.ecs_cluster_name, { stat = "Average" }],
             [".", "MemoryUtilization", ".", ".", ".", ".", { stat = "Average" }]
           ]
         }
@@ -85,7 +83,7 @@ resource "aws_cloudwatch_dashboard" "overview" {
           view   = "timeSeries"
           period = 60
           metrics = [
-            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", aws_db_instance.mysql.id, { stat = "Average" }],
+            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.db_instance_id, { stat = "Average" }],
             [".", "FreeableMemory", ".", ".", { stat = "Average", yAxis = "right" }]
           ]
         }
@@ -97,89 +95,89 @@ resource "aws_cloudwatch_dashboard" "overview" {
 # Alarmas críticas
 
 resource "aws_cloudwatch_metric_alarm" "alb_5xx" {
-  alarm_name          = "gtio-alb-5xx-rate"
-  alarm_description   = "ALB devuelve más de 10 errores 5xx por minuto"
+  alarm_name          = "gtio-alb-5xx-rate-${var.environment}"
+  alarm_description   = "ALB devuelve más de ${var.alarm_5xx_threshold} errores 5xx por minuto"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
   metric_name         = "HTTPCode_Target_5XX_Count"
   namespace           = "AWS/ApplicationELB"
   period              = 60
   statistic           = "Sum"
-  threshold           = 10
+  threshold           = var.alarm_5xx_threshold
   treat_missing_data  = "notBreaching"
   dimensions = {
-    LoadBalancer = aws_lb.app.arn_suffix
+    LoadBalancer = var.alb_arn_suffix
   }
   alarm_actions = [aws_sns_topic.alarms.arn]
   ok_actions    = [aws_sns_topic.alarms.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "alb_latency_p95" {
-  alarm_name          = "gtio-alb-latency-p95"
-  alarm_description   = "Latencia P95 del ALB por encima de 1s durante 5 minutos"
+  alarm_name          = "gtio-alb-latency-p95-${var.environment}"
+  alarm_description   = "Latencia P95 del ALB por encima de ${var.alarm_latency_threshold}s durante 5 minutos"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 5
   metric_name         = "TargetResponseTime"
   namespace           = "AWS/ApplicationELB"
   period              = 60
   extended_statistic  = "p95"
-  threshold           = 1
+  threshold           = var.alarm_latency_threshold
   treat_missing_data  = "notBreaching"
   dimensions = {
-    LoadBalancer = aws_lb.app.arn_suffix
+    LoadBalancer = var.alb_arn_suffix
   }
   alarm_actions = [aws_sns_topic.alarms.arn]
   ok_actions    = [aws_sns_topic.alarms.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "ecs_cpu_high" {
-  alarm_name          = "gtio-ecs-cpu-high"
-  alarm_description   = "CPU del servicio ECS por encima del 80% durante 5 minutos"
+  alarm_name          = "gtio-ecs-cpu-high-${var.environment}"
+  alarm_description   = "CPU del servicio ECS por encima del ${var.alarm_cpu_threshold}% durante 5 minutos"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 5
   metric_name         = "CPUUtilization"
   namespace           = "AWS/ECS"
   period              = 60
   statistic           = "Average"
-  threshold           = 80
+  threshold           = var.alarm_cpu_threshold
   treat_missing_data  = "notBreaching"
   dimensions = {
-    ClusterName = "gtio-cluster"
-    ServiceName = "gtio-app-svc"
+    ClusterName = var.ecs_cluster_name
+    ServiceName = var.ecs_service_name
   }
   alarm_actions = [aws_sns_topic.alarms.arn]
   ok_actions    = [aws_sns_topic.alarms.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
-  alarm_name          = "gtio-rds-cpu-high"
-  alarm_description   = "CPU de la RDS por encima del 80% durante 5 minutos"
+  alarm_name          = "gtio-rds-cpu-high-${var.environment}"
+  alarm_description   = "CPU de la RDS por encima del ${var.alarm_cpu_threshold}% durante 5 minutos"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 5
   metric_name         = "CPUUtilization"
   namespace           = "AWS/RDS"
   period              = 60
   statistic           = "Average"
-  threshold           = 80
+  threshold           = var.alarm_cpu_threshold
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.mysql.id
+    DBInstanceIdentifier = var.db_instance_id
   }
   alarm_actions = [aws_sns_topic.alarms.arn]
   ok_actions    = [aws_sns_topic.alarms.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_memory" {
-  alarm_name          = "gtio-rds-memory-low"
-  alarm_description   = "Memoria libre de la RDS por debajo de 100MB"
+  alarm_name          = "gtio-rds-memory-low-${var.environment}"
+  alarm_description   = "Memoria libre de la RDS por debajo de ${var.alarm_rds_memory_threshold / 1000000}MB"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 5
   metric_name         = "FreeableMemory"
   namespace           = "AWS/RDS"
   period              = 60
   statistic           = "Average"
-  threshold           = 100000000 # 100 MB en bytes
+  threshold           = var.alarm_rds_memory_threshold
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.mysql.id
+    DBInstanceIdentifier = var.db_instance_id
   }
   alarm_actions = [aws_sns_topic.alarms.arn]
   ok_actions    = [aws_sns_topic.alarms.arn]

@@ -4,7 +4,7 @@ terraform {
   cloud {
     organization = "GTIO"
     workspaces {
-      name = "GTIO-WORKSPACE"
+      name = "GTIO-WORKSPACE-pro"
     }
   }
 
