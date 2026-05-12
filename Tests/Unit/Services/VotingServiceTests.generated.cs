@@ -1,8 +1,9 @@
-﻿using Backend.Contracts.Requests;
+using Backend.Contracts.Requests;
 using Backend.Contracts.Responses;
 using Backend.Data;
 using Backend.Services;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
@@ -12,13 +13,15 @@ namespace Backend.Tests
     {
         private readonly IVotoRepository _votoRepository;
         private readonly IGalaRepository _galaRepository;
+        private readonly ILogger<VotingService> _logger;
         private readonly VotingService _votingService;
 
         public VotingServiceTests()
         {
             _votoRepository = Substitute.For<IVotoRepository>();
             _galaRepository = Substitute.For<IGalaRepository>();
-            _votingService = new VotingService(_votoRepository, _galaRepository);
+            _logger = Substitute.For<ILogger<VotingService>>();
+            _votingService = new VotingService(_votoRepository, _galaRepository, _logger);
         }
 
         [Fact]
