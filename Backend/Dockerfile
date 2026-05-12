@@ -8,7 +8,7 @@ WORKDIR /src
 RUN dotnet restore "./Backend.csproj"
 RUN dotnet build "./Backend.csproj" -c Release -o /app/build
 
-RUN dotnet publish "./Backend.csproj" -c Release -o /app/publish -r linux-musl-x64
+RUN dotnet publish "./Backend.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS run
 WORKDIR /app

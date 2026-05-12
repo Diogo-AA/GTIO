@@ -6,13 +6,27 @@ on:
     paths:
       - "Backend/**"
       - ".github/workflows/deploy-aws.yml"
-  workflow_dispatch: # Permite lanzarlo manualmente desde GitHub Actions
+  workflow_dispatch: # Permite lanzarlo manualmente eligiendo el entorno
+    inputs:
+      environment:
+        description: 'Entorno a desplegar'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - pre
+          - pro
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: gtio-backend
-  ECS_CLUSTER: gtio-cluster
-  ECS_SERVICE: gtio-app-svc
+  # Determinar entorno: si es manual usa el input, si es automático por rama: main->dev, pre->pre, pro->pro
+  TARGET_ENV: ${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
+
+  # Variables dinámicas con el sufijo del entorno (ej: gtio-backend-dev)
+  ECR_REPOSITORY: gtio-backend-${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
+  ECS_CLUSTER: gtio-cluster-${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
+  ECS_SERVICE: gtio-app-svc-${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
   CONTAINER_NAME: backend
 
 jobs:
@@ -84,6 +98,7 @@ jobs:
     name: Deploy a ECS Fargate
     runs-on: ubuntu-latest
     needs: build-and-push
+    environment: ${{ env.TARGET_ENV }}
 
     steps:
       - name: Configurar credenciales AWS
@@ -97,7 +112,7 @@ jobs:
       - name: Obtener Task Definition actual
         run: |
           aws ecs describe-task-definition \
-            --task-definition gtio-app \
+            --task-definition gtio-app-${{ env.TARGET_ENV }} \
             --query taskDefinition \
             > task-definition.json
 
