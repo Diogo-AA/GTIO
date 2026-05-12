@@ -19,13 +19,17 @@ internal class Program
             var apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY");
             if (string.IsNullOrWhiteSpace(apiKey))
             {
-                Console.Error.WriteLine("Error: la variable de entorno GROQ_API_KEY no está definida.");
+                Console.Error.WriteLine(
+                    "Error: la variable de entorno GROQ_API_KEY no está definida."
+                );
                 return 1;
             }
 
             if (!File.Exists(options.InputFile))
             {
-                Console.Error.WriteLine($"Error: no existe el fichero de entrada: {options.InputFile}");
+                Console.Error.WriteLine(
+                    $"Error: no existe el fichero de entrada: {options.InputFile}"
+                );
                 return 1;
             }
 
@@ -33,12 +37,18 @@ internal class Program
             var fileName = Path.GetFileName(options.InputFile);
             var additionalContext = LoadAdditionalContext(options.InputFile);
 
-            Console.Error.WriteLine($"Generando tests para {fileName} con el modelo {options.Model}...");
+            Console.Error.WriteLine(
+                $"Generando tests para {fileName} con el modelo {options.Model}..."
+            );
 
             var generator = new GroqTestGenerator(apiKey);
             var prompt = PromptBuilder.Build(sourceCode, fileName, additionalContext);
 
-            var generatedCode = await generator.GenerateTestsAsync(prompt, options.Model, options.Temperature);
+            var generatedCode = await generator.GenerateTestsAsync(
+                prompt,
+                options.Model,
+                options.Temperature
+            );
 
             if (string.IsNullOrWhiteSpace(generatedCode))
             {
@@ -78,15 +88,17 @@ internal class Program
 
         return fileName switch
         {
-            "VotingService.cs" => LoadFiles(new[]
-            {
-                "Backend/Data/IGalaRepository.cs",
-                "Backend/Data/IVotoRepository.cs",
-                "Backend/Contracts/Requests/CrearVotoRequest.cs",
-                "Backend/Contracts/Responses/GetGalaResponse.cs",
-                "Backend/Contracts/Responses/GetGalasResponse.cs"
-            }),
-            _ => new Dictionary<string, string>()
+            "VotingService.cs" => LoadFiles(
+                new[]
+                {
+                    "Backend/Data/IGalaRepository.cs",
+                    "Backend/Data/IVotoRepository.cs",
+                    "Backend/Contracts/Requests/CrearVotoRequest.cs",
+                    "Backend/Contracts/Responses/GetGalaResponse.cs",
+                    "Backend/Contracts/Responses/GetGalasResponse.cs",
+                }
+            ),
+            _ => new Dictionary<string, string>(),
         };
     }
 
@@ -125,24 +137,30 @@ internal class Program
             {
                 case "--output":
                 case "-o":
-                    if (i + 1 >= args.Length) return null;
+                    if (i + 1 >= args.Length)
+                        return null;
                     outputFile = args[++i];
                     break;
 
                 case "--model":
                 case "-m":
-                    if (i + 1 >= args.Length) return null;
+                    if (i + 1 >= args.Length)
+                        return null;
                     model = args[++i];
                     break;
 
                 case "--temperature":
                 case "-t":
-                    if (i + 1 >= args.Length) return null;
-                    if (!decimal.TryParse(
+                    if (i + 1 >= args.Length)
+                        return null;
+                    if (
+                        !decimal.TryParse(
                             args[++i],
                             System.Globalization.NumberStyles.Number,
                             System.Globalization.CultureInfo.InvariantCulture,
-                            out temperature))
+                            out temperature
+                        )
+                    )
                     {
                         return null;
                     }
@@ -175,7 +193,8 @@ internal class Program
 
     private static void PrintUsage()
     {
-        Console.WriteLine("""
+        Console.WriteLine(
+            """
 Uso:
   dotnet run --project Tools/TestAgent -- <fichero.cs> [--output <fichero_tests.cs>] [--model <modelo>] [--temperature <valor>]
 
@@ -183,12 +202,14 @@ Ejemplos:
   dotnet run --project Tools/TestAgent -- Backend/Services/VotingService.cs
   dotnet run --project Tools/TestAgent -- Backend/Services/VotingService.cs --output Tests/Unit/Services/VotingServiceTests.generated.cs
   dotnet run --project Tools/TestAgent -- Backend/Services/VotingService.cs --model llama-3.3-70b-versatile
-""");
+"""
+        );
     }
 
     private sealed record Options(
         string InputFile,
         string? OutputFile,
         string Model,
-        decimal Temperature);
+        decimal Temperature
+    );
 }

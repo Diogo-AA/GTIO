@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Backend.Contracts.Requests;
 using Backend.Contracts.Responses;
 using Backend.Endpoints;
@@ -5,7 +6,6 @@ using Backend.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using NSubstitute;
-using System.Security.Claims;
 
 namespace Tests.Unit.Endpoints;
 
@@ -32,10 +32,16 @@ public class VotingEndpointsTests
         var request = new CrearVotoRequest { IdCandidato = 1, IdGala = 1 };
         var user = CreateUser();
 
-        _votingService.CrearVotoAsync("auth0|test123", request, Arg.Any<CancellationToken>())
+        _votingService
+            .CrearVotoAsync("auth0|test123", request, Arg.Any<CancellationToken>())
             .Returns(true);
 
-        var result = await VotingEndpoints.CrearVoto(request, _votingService, user, CancellationToken.None);
+        var result = await VotingEndpoints.CrearVoto(
+            request,
+            _votingService,
+            user,
+            CancellationToken.None
+        );
 
         result.Should().BeOfType<Created>();
     }
@@ -46,10 +52,16 @@ public class VotingEndpointsTests
         var request = new CrearVotoRequest { IdCandidato = 1, IdGala = 1 };
         var user = CreateUser();
 
-        _votingService.CrearVotoAsync("auth0|test123", request, Arg.Any<CancellationToken>())
+        _votingService
+            .CrearVotoAsync("auth0|test123", request, Arg.Any<CancellationToken>())
             .Returns(false);
 
-        var result = await VotingEndpoints.CrearVoto(request, _votingService, user, CancellationToken.None);
+        var result = await VotingEndpoints.CrearVoto(
+            request,
+            _votingService,
+            user,
+            CancellationToken.None
+        );
 
         result.Should().BeOfType<BadRequest>();
     }
@@ -60,7 +72,12 @@ public class VotingEndpointsTests
         var request = new CrearVotoRequest { IdCandidato = 1, IdGala = 1 };
         var user = new ClaimsPrincipal(new ClaimsIdentity());
 
-        var result = await VotingEndpoints.CrearVoto(request, _votingService, user, CancellationToken.None);
+        var result = await VotingEndpoints.CrearVoto(
+            request,
+            _votingService,
+            user,
+            CancellationToken.None
+        );
 
         result.Should().BeOfType<ForbidHttpResult>();
     }
@@ -72,11 +89,18 @@ public class VotingEndpointsTests
     {
         var response = new GetGalasResponse
         {
-            Galas = [new GetGalaResponse { Id = 1, Nombre = "Gala 1", Fecha = DateTime.Now }]
+            Galas =
+            [
+                new GetGalaResponse
+                {
+                    Id = 1,
+                    Nombre = "Gala 1",
+                    Fecha = DateTime.Now,
+                },
+            ],
         };
 
-        _votingService.GetGalasAsync(Arg.Any<CancellationToken>())
-            .Returns(response);
+        _votingService.GetGalasAsync(Arg.Any<CancellationToken>()).Returns(response);
 
         var result = await VotingEndpoints.GetGalas(_votingService, CancellationToken.None);
 
@@ -89,10 +113,14 @@ public class VotingEndpointsTests
     [Fact]
     public async Task GetGala_Existe_DevuelveOk()
     {
-        var gala = new GetGalaResponse { Id = 1, Nombre = "Gala 1", Fecha = DateTime.Now };
+        var gala = new GetGalaResponse
+        {
+            Id = 1,
+            Nombre = "Gala 1",
+            Fecha = DateTime.Now,
+        };
 
-        _votingService.GetGalaAsync(1, Arg.Any<CancellationToken>())
-            .Returns(gala);
+        _votingService.GetGalaAsync(1, Arg.Any<CancellationToken>()).Returns(gala);
 
         var result = await VotingEndpoints.GetGala(1, _votingService, CancellationToken.None);
 
@@ -103,7 +131,8 @@ public class VotingEndpointsTests
     [Fact]
     public async Task GetGala_NoExiste_DevuelveNotFound()
     {
-        _votingService.GetGalaAsync(99, Arg.Any<CancellationToken>())
+        _votingService
+            .GetGalaAsync(99, Arg.Any<CancellationToken>())
             .Returns((GetGalaResponse?)null);
 
         var result = await VotingEndpoints.GetGala(99, _votingService, CancellationToken.None);

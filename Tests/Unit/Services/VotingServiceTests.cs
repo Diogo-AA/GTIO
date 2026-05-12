@@ -29,24 +29,33 @@ public class VotingServiceTests
         var auth0Sub = "auth0|abc123";
         var request = new CrearVotoRequest { IdCandidato = 1, IdGala = 1 };
 
-        _galaRepository.GetByIdAsync(1, Arg.Any<CancellationToken>())
-            .Returns(new GetGalaResponse { Id = 1, Nombre = "Gala 1", Fecha = DateTime.Now });
+        _galaRepository
+            .GetByIdAsync(1, Arg.Any<CancellationToken>())
+            .Returns(
+                new GetGalaResponse
+                {
+                    Id = 1,
+                    Nombre = "Gala 1",
+                    Fecha = DateTime.Now,
+                }
+            );
 
-        _votoRepository.IsCandidatoInGalaAsync(1, 1, Arg.Any<CancellationToken>())
-            .Returns(true);
+        _votoRepository.IsCandidatoInGalaAsync(1, 1, Arg.Any<CancellationToken>()).Returns(true);
 
-        _votoRepository.HasUserVotedInGalaAsync(auth0Sub, 1, Arg.Any<CancellationToken>())
+        _votoRepository
+            .HasUserVotedInGalaAsync(auth0Sub, 1, Arg.Any<CancellationToken>())
             .Returns(false);
 
-        _votoRepository.CrearVotoAsync(auth0Sub, 1, 1, Arg.Any<CancellationToken>())
-            .Returns(1);
+        _votoRepository.CrearVotoAsync(auth0Sub, 1, 1, Arg.Any<CancellationToken>()).Returns(1);
 
         // Act
         var result = await _sut.CrearVotoAsync(auth0Sub, request);
 
         // Assert
         result.Should().BeTrue();
-        await _votoRepository.Received(1).CrearVotoAsync(auth0Sub, 1, 1, Arg.Any<CancellationToken>());
+        await _votoRepository
+            .Received(1)
+            .CrearVotoAsync(auth0Sub, 1, 1, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -54,14 +63,21 @@ public class VotingServiceTests
     {
         var request = new CrearVotoRequest { IdCandidato = 1, IdGala = 99 };
 
-        _galaRepository.GetByIdAsync(99, Arg.Any<CancellationToken>())
+        _galaRepository
+            .GetByIdAsync(99, Arg.Any<CancellationToken>())
             .Returns((GetGalaResponse?)null);
 
         var result = await _sut.CrearVotoAsync("auth0|abc", request);
 
         result.Should().BeFalse();
-        await _votoRepository.DidNotReceive().CrearVotoAsync(
-            Arg.Any<string>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>());
+        await _votoRepository
+            .DidNotReceive()
+            .CrearVotoAsync(
+                Arg.Any<string>(),
+                Arg.Any<int>(),
+                Arg.Any<int>(),
+                Arg.Any<CancellationToken>()
+            );
     }
 
     [Fact]
@@ -69,11 +85,18 @@ public class VotingServiceTests
     {
         var request = new CrearVotoRequest { IdCandidato = 5, IdGala = 1 };
 
-        _galaRepository.GetByIdAsync(1, Arg.Any<CancellationToken>())
-            .Returns(new GetGalaResponse { Id = 1, Nombre = "Gala 1", Fecha = DateTime.Now });
+        _galaRepository
+            .GetByIdAsync(1, Arg.Any<CancellationToken>())
+            .Returns(
+                new GetGalaResponse
+                {
+                    Id = 1,
+                    Nombre = "Gala 1",
+                    Fecha = DateTime.Now,
+                }
+            );
 
-        _votoRepository.IsCandidatoInGalaAsync(5, 1, Arg.Any<CancellationToken>())
-            .Returns(false);
+        _votoRepository.IsCandidatoInGalaAsync(5, 1, Arg.Any<CancellationToken>()).Returns(false);
 
         var result = await _sut.CrearVotoAsync("auth0|abc", request);
 
@@ -86,20 +109,34 @@ public class VotingServiceTests
         var auth0Sub = "auth0|abc123";
         var request = new CrearVotoRequest { IdCandidato = 1, IdGala = 1 };
 
-        _galaRepository.GetByIdAsync(1, Arg.Any<CancellationToken>())
-            .Returns(new GetGalaResponse { Id = 1, Nombre = "Gala 1", Fecha = DateTime.Now });
+        _galaRepository
+            .GetByIdAsync(1, Arg.Any<CancellationToken>())
+            .Returns(
+                new GetGalaResponse
+                {
+                    Id = 1,
+                    Nombre = "Gala 1",
+                    Fecha = DateTime.Now,
+                }
+            );
 
-        _votoRepository.IsCandidatoInGalaAsync(1, 1, Arg.Any<CancellationToken>())
-            .Returns(true);
+        _votoRepository.IsCandidatoInGalaAsync(1, 1, Arg.Any<CancellationToken>()).Returns(true);
 
-        _votoRepository.HasUserVotedInGalaAsync(auth0Sub, 1, Arg.Any<CancellationToken>())
+        _votoRepository
+            .HasUserVotedInGalaAsync(auth0Sub, 1, Arg.Any<CancellationToken>())
             .Returns(true);
 
         var result = await _sut.CrearVotoAsync(auth0Sub, request);
 
         result.Should().BeFalse();
-        await _votoRepository.DidNotReceive().CrearVotoAsync(
-            Arg.Any<string>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>());
+        await _votoRepository
+            .DidNotReceive()
+            .CrearVotoAsync(
+                Arg.Any<string>(),
+                Arg.Any<int>(),
+                Arg.Any<int>(),
+                Arg.Any<CancellationToken>()
+            );
     }
 
     //GetGalasAsync
@@ -109,12 +146,21 @@ public class VotingServiceTests
     {
         var galas = new List<GetGalaResponse>
         {
-            new() { Id = 1, Nombre = "Gala 1", Fecha = DateTime.Now },
-            new() { Id = 2, Nombre = "Gala 2", Fecha = DateTime.Now }
+            new()
+            {
+                Id = 1,
+                Nombre = "Gala 1",
+                Fecha = DateTime.Now,
+            },
+            new()
+            {
+                Id = 2,
+                Nombre = "Gala 2",
+                Fecha = DateTime.Now,
+            },
         };
 
-        _galaRepository.GetAllAsync(Arg.Any<CancellationToken>())
-            .Returns(galas);
+        _galaRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(galas);
 
         var result = await _sut.GetGalasAsync();
 
@@ -125,7 +171,8 @@ public class VotingServiceTests
     [Fact]
     public async Task GetGalasAsync_SinGalas_DevuelveListaVacia()
     {
-        _galaRepository.GetAllAsync(Arg.Any<CancellationToken>())
+        _galaRepository
+            .GetAllAsync(Arg.Any<CancellationToken>())
             .Returns(new List<GetGalaResponse>());
 
         var result = await _sut.GetGalasAsync();
@@ -137,10 +184,14 @@ public class VotingServiceTests
     [Fact]
     public async Task GetGalaAsync_Existe_DevuelveGala()
     {
-        var gala = new GetGalaResponse { Id = 1, Nombre = "Gala 1", Fecha = DateTime.Now };
+        var gala = new GetGalaResponse
+        {
+            Id = 1,
+            Nombre = "Gala 1",
+            Fecha = DateTime.Now,
+        };
 
-        _galaRepository.GetByIdAsync(1, Arg.Any<CancellationToken>())
-            .Returns(gala);
+        _galaRepository.GetByIdAsync(1, Arg.Any<CancellationToken>()).Returns(gala);
 
         var result = await _sut.GetGalaAsync(1);
 
@@ -151,7 +202,8 @@ public class VotingServiceTests
     [Fact]
     public async Task GetGalaAsync_NoExiste_DevuelveNull()
     {
-        _galaRepository.GetByIdAsync(99, Arg.Any<CancellationToken>())
+        _galaRepository
+            .GetByIdAsync(99, Arg.Any<CancellationToken>())
             .Returns((GetGalaResponse?)null);
 
         var result = await _sut.GetGalaAsync(99);

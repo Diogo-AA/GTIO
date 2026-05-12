@@ -13,25 +13,27 @@ public class GalaRepository : IGalaRepository
         _dataSource = dataSource;
     }
 
-    public async Task<List<GetGalaResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetGalaResponse>> GetAllAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         using var connection = await _dataSource.OpenConnectionAsync(cancellationToken);
 
         const string sql = """
-            SELECT 
-                g.id AS Id,
-                g.nombre AS Nombre,
-                g.fecha AS Fecha,
-                c.id AS Id,
-                c.nombre AS Nombre,
-                COUNT(v.id) AS NumVotos
-            FROM gala g
-            LEFT JOIN gala_candidatos gc ON gc.gala_id = g.id
-            LEFT JOIN candidatos c ON c.id = gc.candidato_id
-            LEFT JOIN votos v ON v.gala = g.id AND v.candidato = c.id
-            GROUP BY g.id, g.nombre, g.fecha, c.id, c.nombre
-            ORDER BY g.id, NumVotos DESC
-        """;
+                SELECT 
+                    g.id AS Id,
+                    g.nombre AS Nombre,
+                    g.fecha AS Fecha,
+                    c.id AS Id,
+                    c.nombre AS Nombre,
+                    COUNT(v.id) AS NumVotos
+                FROM gala g
+                LEFT JOIN gala_candidatos gc ON gc.gala_id = g.id
+                LEFT JOIN candidatos c ON c.id = gc.candidato_id
+                LEFT JOIN votos v ON v.gala = g.id AND v.candidato = c.id
+                GROUP BY g.id, g.nombre, g.fecha, c.id, c.nombre
+                ORDER BY g.id, NumVotos DESC
+            """;
 
         var galaDictionary = new Dictionary<int, GetGalaResponse>();
 
@@ -58,26 +60,29 @@ public class GalaRepository : IGalaRepository
         return galaDictionary.Values.ToList();
     }
 
-    public async Task<GetGalaResponse?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<GetGalaResponse?> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         using var connection = await _dataSource.OpenConnectionAsync(cancellationToken);
 
         const string sql = """
-            SELECT 
-                g.id AS Id,
-                g.nombre AS Nombre,
-                g.fecha AS Fecha,
-                c.id AS Id,
-                c.nombre AS Nombre,
-                COUNT(v.id) AS NumVotos
-            FROM gala g
-            LEFT JOIN gala_candidatos gc ON gc.gala_id = g.id
-            LEFT JOIN candidatos c ON c.id = gc.candidato_id
-            LEFT JOIN votos v ON v.gala = g.id AND v.candidato = c.id
-            WHERE g.id = @id
-            GROUP BY g.id, g.nombre, g.fecha, c.id, c.nombre
-            ORDER BY NumVotos DESC
-        """;
+                SELECT 
+                    g.id AS Id,
+                    g.nombre AS Nombre,
+                    g.fecha AS Fecha,
+                    c.id AS Id,
+                    c.nombre AS Nombre,
+                    COUNT(v.id) AS NumVotos
+                FROM gala g
+                LEFT JOIN gala_candidatos gc ON gc.gala_id = g.id
+                LEFT JOIN candidatos c ON c.id = gc.candidato_id
+                LEFT JOIN votos v ON v.gala = g.id AND v.candidato = c.id
+                WHERE g.id = @id
+                GROUP BY g.id, g.nombre, g.fecha, c.id, c.nombre
+                ORDER BY NumVotos DESC
+            """;
 
         var galaDictionary = new Dictionary<int, GetGalaResponse>();
 
