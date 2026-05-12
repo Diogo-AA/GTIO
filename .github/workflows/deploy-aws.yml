@@ -1,0 +1,117 @@
+name: CI/CD — Deploy to AWS ECS
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "Backend/**"
+      - ".github/workflows/deploy-aws.yml"
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: gtio-backend
+  ECS_CLUSTER: gtio-cluster
+  ECS_SERVICE: gtio-app-svc
+  CONTAINER_NAME: backend
+
+jobs:
+  # ─── 1. Tests unitarios ────────────────────────────────────────────────────
+  test:
+    name: Tests Unitarios (.NET 10)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restaurar dependencias
+        run: dotnet restore Tests/Tests.csproj
+
+      - name: Ejecutar tests
+        run: dotnet test Tests/Tests.csproj --no-restore --verbosity normal --collect:"XPlat Code Coverage"
+
+      - name: Subir reporte de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: "**/coverage.cobertura.xml"
+          retention-days: 7
+
+  # ─── 2. Build & Push a ECR ─────────────────────────────────────────────────
+  build-and-push:
+    name: Build & Push imagen Docker a ECR
+    runs-on: ubuntu-latest
+    needs: test
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login a Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag y push de la imagen a ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./Backend
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  # ─── 3. Deploy a ECS ───────────────────────────────────────────────────────
+  deploy:
+    name: Deploy a ECS Fargate
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Obtener Task Definition actual
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition gtio-app \
+            --query taskDefinition \
+            > task-definition.json
+
+      - name: Actualizar imagen en la Task Definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ needs.build-and-push.outputs.image }}
+
+      - name: Desplegar nueva Task Definition en ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
