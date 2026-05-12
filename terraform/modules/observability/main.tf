@@ -296,3 +296,114 @@ resource "aws_cloudwatch_metric_alarm" "backend_errors_high" {
   alarm_actions = [aws_sns_topic.alarms.arn]
   ok_actions    = [aws_sns_topic.alarms.arn]
 }
+
+# =============================================================================
+# Amazon Managed Grafana (AMG)
+# Servicio gestionado: AWS gestiona HA, actualizaciones y escalado.
+# =============================================================================
+
+data "aws_caller_identity" "current" {}
+
+# --- IAM Role que AMG asume para acceder a CloudWatch ---
+
+resource "aws_iam_role" "grafana_amg" {
+  name        = "gtio-grafana-amg-role-${var.environment}"
+  description = "Rol que Amazon Managed Grafana asume para leer CloudWatch"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "grafana.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+      Condition = {
+        StringEquals = {
+          "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+        }
+      }
+    }]
+  })
+
+  tags = { Name = "gtio-grafana-amg-role-${var.environment}" }
+}
+
+resource "aws_iam_role_policy" "grafana_cloudwatch" {
+  name = "gtio-grafana-cloudwatch-${var.environment}"
+  role = aws_iam_role.grafana_amg.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid    = "AllowCloudWatchRead"
+      Effect = "Allow"
+      Action = [
+        "cloudwatch:DescribeAlarmsForMetric",
+        "cloudwatch:DescribeAlarmHistory",
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:ListMetrics",
+        "cloudwatch:GetMetricData",
+        "cloudwatch:GetInsightRuleReport",
+        "logs:DescribeLogGroups",
+        "logs:GetLogGroupFields",
+        "logs:StartQuery",
+        "logs:StopQuery",
+        "logs:GetQueryResults",
+        "logs:GetLogEvents",
+        "ec2:DescribeTags",
+        "ec2:DescribeInstances",
+        "ec2:DescribeRegions",
+        "tag:GetResources"
+      ]
+      Resource = "*"
+    }]
+  })
+}
+
+# --- Amazon Managed Grafana Workspace ---
+
+resource "aws_grafana_workspace" "main" {
+  name        = "gtio-grafana-${var.environment}"
+  description = "Observabilidad GTIO [${var.environment}] - metricas y logs via CloudWatch"
+
+  account_access_type = "CURRENT_ACCOUNT"
+
+  # AWS_SSO requiere IAM Identity Center habilitado en la cuenta.
+  # En AWS Academy cambiar a ["SAML"] si SSO no esta disponible.
+  authentication_providers = ["AWS_SSO"]
+
+  permission_type = "SERVICE_MANAGED"
+  role_arn        = aws_iam_role.grafana_amg.arn
+
+  data_sources              = ["CLOUDWATCH", "PROMETHEUS", "XRAY"]
+  notification_destinations = ["SNS"]
+
+  grafana_version = "10.4"
+
+  tags = {
+    Name        = "gtio-grafana-${var.environment}"
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
+}
+
+# --- Permitir que AMG publique alertas en el SNS topic del modulo ---
+
+resource "aws_sns_topic_policy" "grafana_amg_publish" {
+  arn = aws_sns_topic.alarms.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "AllowGrafanaAMGPublish"
+      Effect    = "Allow"
+      Principal = { Service = "grafana.amazonaws.com" }
+      Action    = "sns:Publish"
+      Resource  = aws_sns_topic.alarms.arn
+      Condition = {
+        StringEquals = {
+          "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+        }
+      }
+    }]
+  })
+}

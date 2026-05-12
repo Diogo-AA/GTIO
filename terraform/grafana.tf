@@ -1,159 +1,142 @@
-# grafana.tf — Grafana en ECS Fargate con CloudWatch como datasource
+# grafana.tf — Amazon Managed Grafana (AMG)
+# Servicio gestionado de AWS: no requiere ECS, contenedores ni ALB listeners propios.
+# AWS gestiona la alta disponibilidad, actualizaciones y escalado automáticamente.
+#
+# NOTA SOBRE AWS ACADEMY / LABROLE:
+#   AMG requiere que AWS IAM Identity Center (SSO) esté habilitado en la cuenta.
+#   En cuentas de laboratorio esto puede no estar disponible; en ese caso el workspace
+#   se crea pero no se pueden asignar usuarios SSO directamente.
+#   Alternativa: cambiar authentication_providers = ["SAML"] con un IdP externo.
 
-# ─── CloudWatch Log Group ─────────────────────────────────────────────────────
+# ─── Data source: cuenta AWS actual ──────────────────────────────────────────
 
-resource "aws_cloudwatch_log_group" "grafana" {
-  name              = "/ecs/gtio-grafana"
-  retention_in_days = 7
-}
+data "aws_caller_identity" "current" {}
 
-# ─── Security Group ──────────────────────────────────────────────────────────
+# ─── IAM Role para Amazon Managed Grafana ────────────────────────────────────
+# AMG asume este rol para leer métricas y logs de CloudWatch sin credenciales
+# hardcodeadas. AWS gestiona la rotación y el ciclo de vida del rol.
 
-resource "aws_security_group" "grafana_sg" {
-  name        = "gtio-grafana-sg"
-  description = "Permitir trafico a Grafana desde el ALB"
-  vpc_id      = aws_vpc.main.id
+resource "aws_iam_role" "grafana_amg" {
+  name        = "gtio-grafana-amg-role"
+  description = "Rol que Amazon Managed Grafana asume para acceder a CloudWatch"
 
-  ingress {
-    description     = "Grafana desde el ALB"
-    from_port       = 3000
-    to_port         = 3000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb_sg.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "gtio-grafana-sg" }
-}
-
-# Permitir puerto 3000 entrante en el ALB (recurso separado para no alterar alb.tf)
-resource "aws_vpc_security_group_ingress_rule" "alb_grafana" {
-  security_group_id = aws_security_group.alb_sg.id
-  from_port         = 3000
-  to_port           = 3000
-  ip_protocol       = "tcp"
-  cidr_ipv4         = "0.0.0.0/0"
-  description       = "Acceso a Grafana desde Internet"
-}
-
-# ─── ALB: Target Group + Listener ────────────────────────────────────────────
-
-resource "aws_lb_target_group" "grafana" {
-  name        = "gtio-grafana-tg"
-  port        = 3000
-  protocol    = "HTTP"
-  target_type = "ip"
-  vpc_id      = aws_vpc.main.id
-
-  health_check {
-    path                = "/api/health"
-    matcher             = "200"
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 3
-  }
-
-  tags = { Name = "gtio-grafana-tg" }
-}
-
-resource "aws_lb_listener" "grafana" {
-  load_balancer_arn = aws_lb.app.arn
-  port              = 3000
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.grafana.arn
-  }
-}
-
-# ─── ECS Task Definition ─────────────────────────────────────────────────────
-# Grafana se configura al arrancar:
-#   1. Se escribe el datasource de CloudWatch en /etc/grafana/provisioning/datasources/
-#   2. CloudWatch usa el IAM Task Role (LabRole) — sin credenciales hardcodeadas
-#   3. Se lanza Grafana con /run.sh
-
-resource "aws_ecs_task_definition" "grafana" {
-  family                   = "gtio-grafana"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = 512
-  memory                   = 1024
-  execution_role_arn       = data.aws_iam_role.lab_role.arn
-  task_role_arn            = data.aws_iam_role.lab_role.arn
-
-  container_definitions = jsonencode([
-    {
-      name      = "grafana"
-      image     = "grafana/grafana:11.0.0"
-      essential = true
-
-      portMappings = [
-        {
-          containerPort = 3000
-          hostPort      = 3000
-          protocol      = "tcp"
-        }
-      ]
-
-      # Provisiona el datasource de CloudWatch automáticamente al arrancar
-      entryPoint = ["/bin/sh", "-c"]
-      command = [
-        join(" && ", [
-          "mkdir -p /etc/grafana/provisioning/datasources",
-          "printf 'apiVersion: 1\\ndatasources:\\n  - name: CloudWatch\\n    type: cloudwatch\\n    isDefault: true\\n    jsonData:\\n      authType: default\\n      defaultRegion: ${var.aws_region}\\n' > /etc/grafana/provisioning/datasources/cloudwatch.yml",
-          "/run.sh"
-        ])
-      ]
-
-      environment = [
-        { name = "GF_SECURITY_ADMIN_USER", value = "admin" },
-        { name = "GF_SECURITY_ADMIN_PASSWORD", value = "gtio-admin" },
-        { name = "GF_AUTH_ANONYMOUS_ENABLED", value = "false" },
-        { name = "GF_SERVER_ROOT_URL", value = "http://%(domain)s:3000/" },
-        { name = "GF_LOG_LEVEL", value = "info" },
-        { name = "GF_INSTALL_PLUGINS", value = "grafana-clock-panel" }
-      ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.grafana.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "grafana"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "grafana.amazonaws.com" }
+        Action    = "sts:AssumeRole"
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
         }
       }
-    }
-  ])
+    ]
+  })
+
+  tags = { Name = "gtio-grafana-amg-role" }
 }
 
-# ─── ECS Service ─────────────────────────────────────────────────────────────
+# Política inline: permisos de lectura sobre CloudWatch (métricas + logs)
+resource "aws_iam_role_policy" "grafana_cloudwatch" {
+  name = "gtio-grafana-cloudwatch-policy"
+  role = aws_iam_role.grafana_amg.id
 
-resource "aws_ecs_service" "grafana" {
-  name            = "gtio-grafana-svc"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.grafana.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowCloudWatchRead"
+        Effect = "Allow"
+        Action = [
+          # Métricas
+          "cloudwatch:DescribeAlarmsForMetric",
+          "cloudwatch:DescribeAlarmHistory",
+          "cloudwatch:DescribeAlarms",
+          "cloudwatch:ListMetrics",
+          "cloudwatch:GetMetricData",
+          "cloudwatch:GetInsightRuleReport",
+          # CloudWatch Logs
+          "logs:DescribeLogGroups",
+          "logs:GetLogGroupFields",
+          "logs:StartQuery",
+          "logs:StopQuery",
+          "logs:GetQueryResults",
+          "logs:GetLogEvents",
+          # Dimensiones EC2
+          "ec2:DescribeTags",
+          "ec2:DescribeInstances",
+          "ec2:DescribeRegions",
+          # Resource tags
+          "tag:GetResources"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
 
-  network_configuration {
-    subnets          = [aws_subnet.public.id, aws_subnet.public_2.id]
-    security_groups  = [aws_security_group.grafana_sg.id]
-    assign_public_ip = true
+# ─── Amazon Managed Grafana Workspace ────────────────────────────────────────
+# aws_grafana_workspace es el recurso nativo de AWS para AMG.
+# Equivale a crear el workspace desde la consola: Grafana → Create workspace.
+
+resource "aws_grafana_workspace" "main" {
+  name        = "gtio-grafana"
+  description = "Observabilidad GTIO — métricas ECS, ALB, RDS via CloudWatch"
+
+  # Solo accede a recursos de esta cuenta AWS
+  account_access_type = "CURRENT_ACCOUNT"
+
+  # Proveedor de autenticación:
+  #   "AWS_SSO"  → requiere IAM Identity Center habilitado en la cuenta (recomendado en producción)
+  #   "SAML"     → integración con IdP externo (Okta, Azure AD, etc.)
+  # En AWS Academy usar "SAML" si SSO no está disponible.
+  authentication_providers = ["AWS_SSO"]
+
+  # SERVICE_MANAGED: AWS gestiona los permisos del workspace automáticamente.
+  # CUSTOMER_MANAGED: el cliente gestiona los permisos (necesita role_arn).
+  permission_type = "SERVICE_MANAGED"
+
+  # Rol IAM que Grafana usará para leer CloudWatch
+  role_arn = aws_iam_role.grafana_amg.arn
+
+  # Datasources habilitados en el workspace (se muestran en la UI de AMG)
+  data_sources = ["CLOUDWATCH", "PROMETHEUS", "XRAY"]
+
+  # Canales de notificación disponibles para alertas de Grafana
+  notification_destinations = ["SNS"]
+
+  # Versión de Grafana gestionada por AWS
+  grafana_version = "10.4"
+
+  tags = {
+    Name      = "gtio-grafana"
+    ManagedBy = "terraform"
   }
+}
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.grafana.arn
-    container_name   = "grafana"
-    container_port   = 3000
-  }
+# ─── SNS: permitir que AMG publique alertas en el topic de alarmas ────────────
 
-  depends_on = [aws_lb_listener.grafana]
+resource "aws_sns_topic_policy" "grafana_amg_publish" {
+  arn = aws_sns_topic.alarms.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowGrafanaAMGPublish"
+        Effect    = "Allow"
+        Principal = { Service = "grafana.amazonaws.com" }
+        Action    = "sns:Publish"
+        Resource  = aws_sns_topic.alarms.arn
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
+        }
+      }
+    ]
+  })
 }
