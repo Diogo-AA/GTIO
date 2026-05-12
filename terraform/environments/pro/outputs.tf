@@ -4,11 +4,6 @@ output "api_url" {
 }
 
 output "grafana_url" {
-  description = "URL de Amazon Managed Grafana"
-  value       = module.observability.grafana_url
-}
-
-output "grafana_workspace_id" {
-  description = "ID del workspace AMG"
-  value       = module.observability.grafana_workspace_id
+  description = "URL del Load Balancer para acceder a Grafana"
+  value       = "http://${module.compute.alb_dns_name}:3000"
 }
