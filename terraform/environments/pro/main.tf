@@ -37,11 +37,6 @@ module "compute" {
   desired_count = 2 # Alta disponibilidad en pro
 }
 
-module "frontend" {
-  source      = "../../modules/frontend"
-  environment = "pro"
-}
-
 module "observability" {
   source           = "../../modules/observability"
   environment      = "pro"
