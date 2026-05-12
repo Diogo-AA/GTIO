@@ -54,6 +54,5 @@ services:
     routes:
       - name: api-protegidas
         paths:
-          - /votos
-          - /galas
-        strip_path: false
+          - /api
+        strip_path: true

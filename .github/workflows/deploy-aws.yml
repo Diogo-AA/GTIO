@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "Backend/**"
+      - "frontend/**"
       - ".github/workflows/deploy-aws.yml"
   workflow_dispatch: # Permite lanzarlo manualmente eligiendo el entorno
     inputs:
@@ -24,10 +25,10 @@ env:
   TARGET_ENV: ${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
 
   # Variables dinámicas con el sufijo del entorno (ej: gtio-backend-dev)
-  ECR_REPOSITORY: gtio-backend-${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
+  ECR_REPOSITORY_BACKEND: gtio-backend-${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
+  ECR_REPOSITORY_FRONTEND: gtio-frontend-${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
   ECS_CLUSTER: gtio-cluster-${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
   ECS_SERVICE: gtio-app-svc-${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
-  CONTAINER_NAME: backend
 
 jobs:
   # ─── 1. Tests unitarios ────────────────────────────────────────────────────
@@ -57,9 +58,9 @@ jobs:
           path: "**/coverage.cobertura.xml"
           retention-days: 7
 
-  # ─── 2. Build & Push a ECR ─────────────────────────────────────────────────
-  build-and-push:
-    name: Build & Push imagen Docker a ECR
+  # ─── 2a. Build & Push Backend a ECR ────────────────────────────────────────
+  build-backend:
+    name: Build & Push Backend a ECR
     runs-on: ubuntu-latest
     needs: test
     outputs:
@@ -87,17 +88,58 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./Backend
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG ./Backend
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  # ─── 2b. Build & Push Frontend a ECR ──────────────────────────────────────
+  build-frontend:
+    name: Build & Push Frontend a ECR
+    runs-on: ubuntu-latest
+    needs: test
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login a Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag y push de la imagen a ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            --build-arg VITE_API_BASE=${{ secrets.VITE_API_BASE || '/api' }} \
+            --build-arg VITE_AUTH0_DOMAIN=${{ secrets.VITE_AUTH0_DOMAIN }} \
+            --build-arg VITE_AUTH0_CLIENT_ID=${{ secrets.VITE_AUTH0_CLIENT_ID }} \
+            --build-arg VITE_AUTH0_AUDIENCE=${{ secrets.VITE_AUTH0_AUDIENCE }} \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG ./frontend
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
   # ─── 3. Deploy a ECS ───────────────────────────────────────────────────────
   deploy:
     name: Deploy a ECS Fargate
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: [build-backend, build-frontend]
     environment: ${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
 
     steps:
@@ -116,18 +158,26 @@ jobs:
             --query taskDefinition \
             > task-definition.json
 
-      - name: Actualizar imagen en la Task Definition
-        id: task-def
+      - name: Actualizar imagen del backend en la Task Definition
+        id: task-def-backend
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ needs.build-and-push.outputs.image }}
+          container-name: backend
+          image: ${{ needs.build-backend.outputs.image }}
+
+      - name: Actualizar imagen del frontend en la Task Definition
+        id: task-def-frontend
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-backend.outputs.task-definition }}
+          container-name: frontend
+          image: ${{ needs.build-frontend.outputs.image }}
 
       - name: Desplegar nueva Task Definition en ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          task-definition: ${{ steps.task-def-frontend.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
