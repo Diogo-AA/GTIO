@@ -525,3 +525,7 @@ terraform.rc
 .terraform.lock*
 # Terraform binary
 terraform/terraform.exe
+
+current-task.json
+new-task.json
+
