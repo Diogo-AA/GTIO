@@ -36,3 +36,14 @@ module "compute" {
 
   desired_count = 1
 }
+
+module "observability" {
+  source           = "../../modules/observability"
+  environment      = "pre"
+  aws_region       = module.network.aws_region
+  alarm_email      = var.alarm_email
+  alb_arn_suffix   = module.compute.alb_arn_suffix
+  ecs_cluster_name = module.compute.ecs_cluster_name
+  ecs_service_name = module.compute.ecs_service_name
+  db_instance_id   = module.persistence.db_instance_id
+}

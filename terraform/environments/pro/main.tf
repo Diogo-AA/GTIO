@@ -36,3 +36,19 @@ module "compute" {
 
   desired_count = 2 # Alta disponibilidad en pro
 }
+
+module "observability" {
+  source           = "../../modules/observability"
+  environment      = "pro"
+  aws_region       = module.network.aws_region
+  alarm_email      = var.alarm_email
+  alb_arn_suffix   = module.compute.alb_arn_suffix
+  ecs_cluster_name = module.compute.ecs_cluster_name
+  ecs_service_name = module.compute.ecs_service_name
+  db_instance_id   = module.persistence.db_instance_id
+
+  # Umbrales más estrictos en producción
+  alarm_5xx_threshold     = 5
+  alarm_latency_threshold = 0.5
+  alarm_cpu_threshold     = 70
+}
