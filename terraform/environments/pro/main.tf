@@ -55,14 +55,3 @@ module "observability" {
   alarm_latency_threshold = 0.5
   alarm_cpu_threshold     = 70
 }
-
-module "frontend" {
-  source           = "../../modules/frontend"
-  environment      = "pro"
-  vpc_id           = module.network.vpc_id
-  public_subnet_id = module.network.public_subnet_ids[0]
-  alb_dns_name     = module.compute.alb_dns_name
-  auth0_domain     = var.auth0_domain
-  auth0_client_id  = var.auth0_client_id
-  auth0_audience   = var.auth0_audience
-}
