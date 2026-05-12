@@ -21,4 +21,5 @@ jobs:
         run: |
           dotnet tool install --global CSharpier
           echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+          dotnet tool restore
           dotnet csharpier check .
