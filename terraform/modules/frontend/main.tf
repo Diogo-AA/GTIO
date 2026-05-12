@@ -1,6 +1,7 @@
 data "aws_caller_identity" "current" {}
 
-# Bucket S3 privado donde se sube el build del frontend
+# En AWS Academy no se puede usar OAC/OAI, asi que servimos el bucket publico
+# detras de CloudFront. Solo contiene HTML/JS/CSS compilados (no hay datos sensibles).
 resource "aws_s3_bucket" "frontend" {
   bucket = "gtio-frontend-${var.environment}-${data.aws_caller_identity.current.account_id}"
 }
@@ -13,22 +14,46 @@ resource "aws_s3_bucket_ownership_controls" "frontend" {
   }
 }
 
+# Permitimos acceso publico (lo necesita el website hosting)
 resource "aws_s3_bucket_public_access_block" "frontend" {
   bucket = aws_s3_bucket.frontend.id
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
 
-# OAC: el bucket queda privado y solo accede CloudFront
-resource "aws_cloudfront_origin_access_control" "frontend" {
-  name                              = "gtio-frontend-oac-${var.environment}"
-  description                       = "OAC para el bucket del frontend de GTIO"
-  origin_access_control_origin_type = "s3"
-  signing_behavior                  = "always"
-  signing_protocol                  = "sigv4"
+# Website hosting: rutas inexistentes sirven index.html (SPA con React Router)
+resource "aws_s3_bucket_website_configuration" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
+  }
+}
+
+resource "aws_s3_bucket_policy" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+
+  depends_on = [aws_s3_bucket_public_access_block.frontend]
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowPublicRead"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.frontend.arn}/*"
+      }
+    ]
+  })
 }
 
 resource "aws_cloudfront_distribution" "frontend" {
@@ -38,16 +63,24 @@ resource "aws_cloudfront_distribution" "frontend" {
   comment             = "GTIO frontend - ${var.environment}"
   price_class         = "PriceClass_100"
 
+  # Origen = website endpoint del bucket (HTTP, no soporta HTTPS)
+  # CloudFront sirve HTTPS al usuario; el tramo CloudFront-S3 va por la red interna de AWS.
   origin {
-    domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
-    origin_id                = "s3-frontend"
-    origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
+    domain_name = aws_s3_bucket_website_configuration.frontend.website_endpoint
+    origin_id   = "s3-website-frontend"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
   }
 
   default_cache_behavior {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "s3-frontend"
+    target_origin_id       = "s3-website-frontend"
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
 
@@ -55,7 +88,7 @@ resource "aws_cloudfront_distribution" "frontend" {
     cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
   }
 
-  # React Router (SPA): rutas internas devuelven index.html en lugar de 403/404
+  # Backup de SPA routing por si llega un 404 desde S3
   custom_error_response {
     error_code            = 403
     response_code         = 200
@@ -79,29 +112,4 @@ resource "aws_cloudfront_distribution" "frontend" {
   viewer_certificate {
     cloudfront_default_certificate = true
   }
-}
-
-# El bucket solo permite lectura a la distribución CloudFront de arriba
-resource "aws_s3_bucket_policy" "frontend" {
-  bucket = aws_s3_bucket.frontend.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "AllowCloudFrontRead"
-        Effect = "Allow"
-        Principal = {
-          Service = "cloudfront.amazonaws.com"
-        }
-        Action   = "s3:GetObject"
-        Resource = "${aws_s3_bucket.frontend.arn}/*"
-        Condition = {
-          StringEquals = {
-            "AWS:SourceArn" = aws_cloudfront_distribution.frontend.arn
-          }
-        }
-      }
-    ]
-  })
 }
