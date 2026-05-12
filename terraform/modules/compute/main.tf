@@ -199,7 +199,7 @@ resource "aws_cloudwatch_log_group" "ecs_frontend" {
 
 # ECS Task & Service
 resource "aws_security_group" "ecs_task_sg" {
-  name        = "gtio-ecs-task-sg-${var.environment}"
+  name_prefix = "gtio-ecs-task-sg-${var.environment}-"
   description = "Permitir trafico a Kong y nginx desde el ALB"
   vpc_id      = var.vpc_id
 
@@ -224,6 +224,10 @@ resource "aws_security_group" "ecs_task_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
