@@ -330,12 +330,6 @@ resource "aws_grafana_workspace" "main" {
   notification_destinations = ["SNS"]
 
   grafana_version = "10.4"
-
-  tags = {
-    Name        = "gtio-grafana-${var.environment}"
-    Environment = var.environment
-    ManagedBy   = "terraform"
-  }
 }
 
 # --- Permitir que AMG publique alertas en el SNS topic del modulo ---
