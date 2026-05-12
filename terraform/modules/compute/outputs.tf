@@ -27,3 +27,13 @@ output "ecr_repository_url" {
   description = "URL del repositorio ECR del backend"
   value       = aws_ecr_repository.backend.repository_url
 }
+
+output "ecs_backend_log_group_name" {
+  description = "Nombre del log group del backend"
+  value       = aws_cloudwatch_log_group.ecs_backend.name
+}
+
+output "ecs_kong_log_group_name" {
+  description = "Nombre del log group de Kong"
+  value       = aws_cloudwatch_log_group.ecs_kong.name
+}

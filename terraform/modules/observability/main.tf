@@ -87,6 +87,22 @@ resource "aws_cloudwatch_dashboard" "overview" {
             [".", "FreeableMemory", ".", ".", { stat = "Average", yAxis = "right" }]
           ]
         }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 12
+        width  = 24
+        height = 6
+        properties = {
+          title  = "Backend - Errores extraídos de logs"
+          region = var.aws_region
+          view   = "timeSeries"
+          period = 60
+          metrics = [
+            ["GTIO/Logs", "BackendErrors-${var.environment}", { stat = "Sum" }]
+          ]
+        }
       }
     ]
   })
@@ -179,6 +195,104 @@ resource "aws_cloudwatch_metric_alarm" "rds_memory" {
   dimensions = {
     DBInstanceIdentifier = var.db_instance_id
   }
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+}
+
+# Queries guardadas de Logs Insights
+
+resource "aws_cloudwatch_query_definition" "errores_backend" {
+  name = "GTIO/${var.environment}/backend/errores"
+
+  log_group_names = [
+    var.ecs_backend_log_group_name
+  ]
+
+  query_string = <<-EOT
+    fields @timestamp, @message
+    | filter @message like /(?i)(error|exception|fail)/
+    | sort @timestamp desc
+    | limit 100
+  EOT
+}
+
+resource "aws_cloudwatch_query_definition" "kong_5xx" {
+  name = "GTIO/${var.environment}/kong/5xx"
+
+  log_group_names = [
+    var.ecs_kong_log_group_name
+  ]
+
+  query_string = <<-EOT
+    fields @timestamp, @message
+    | filter @message like / 5\d\d /
+    | sort @timestamp desc
+    | limit 100
+  EOT
+}
+
+resource "aws_cloudwatch_query_definition" "latencia_kong" {
+  name = "GTIO/${var.environment}/kong/latencia-alta"
+
+  log_group_names = [
+    var.ecs_kong_log_group_name
+  ]
+
+  query_string = <<-EOT
+    fields @timestamp, @message
+    | parse @message /request_time=(?<lat>[0-9\.]+)/
+    | filter lat > 0.5
+    | sort lat desc
+    | limit 50
+  EOT
+}
+
+resource "aws_cloudwatch_query_definition" "todos_logs" {
+  name = "GTIO/${var.environment}/all/recientes"
+
+  log_group_names = [
+    var.ecs_backend_log_group_name,
+    var.ecs_kong_log_group_name
+  ]
+
+  query_string = <<-EOT
+    fields @timestamp, @log, @message
+    | sort @timestamp desc
+    | limit 200
+  EOT
+}
+
+# Metric Filter: contar líneas de error en el backend
+# Genera una métrica custom GTIO/Logs/BackendErrors a partir de los logs
+
+resource "aws_cloudwatch_log_metric_filter" "backend_errors" {
+  name           = "gtio-backend-errors-${var.environment}"
+  log_group_name = var.ecs_backend_log_group_name
+  pattern        = "?ERROR ?Error ?error ?EXCEPTION ?Exception ?exception ?FAIL ?Fail ?fail"
+
+  metric_transformation {
+    name          = "BackendErrors-${var.environment}"
+    namespace     = "GTIO/Logs"
+    value         = "1"
+    default_value = "0"
+    unit          = "Count"
+  }
+}
+
+# Alarma sobre la métrica extraída de logs
+
+resource "aws_cloudwatch_metric_alarm" "backend_errors_high" {
+  alarm_name          = "gtio-backend-errors-high-${var.environment}"
+  alarm_description   = "Más de ${var.alarm_backend_errors_threshold} errores en logs del backend en 1 minuto"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "BackendErrors-${var.environment}"
+  namespace           = "GTIO/Logs"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = var.alarm_backend_errors_threshold
+  treat_missing_data  = "notBreaching"
+
   alarm_actions = [aws_sns_topic.alarms.arn]
   ok_actions    = [aws_sns_topic.alarms.arn]
 }
