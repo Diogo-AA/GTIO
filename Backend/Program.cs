@@ -1,3 +1,5 @@
+using Amazon.XRay.Recorder.Core;
+using Amazon.XRay.Recorder.Handlers.AspNetCore;
 using Backend.Data;
 using Backend.Endpoints;
 using Backend.Services;
@@ -11,6 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+// X-Ray: inicializar el recorder con la configuración del proyecto
+AWSXRayRecorder.InitializeInstance(configuration: builder.Configuration);
 
 // Autenticación con Auth0
 builder
@@ -66,6 +71,9 @@ builder.Services.AddScoped<IVotoRepository, VotoRepository>();
 builder.Services.AddScoped<IVotingService, VotingService>();
 
 var app = builder.Build();
+
+// X-Ray: middleware que captura cada request entrante como un segmento de traza
+app.UseXRay("gtio-backend");
 
 if (app.Environment.IsDevelopment())
 {

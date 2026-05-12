@@ -88,6 +88,11 @@ resource "aws_cloudwatch_log_group" "ecs_kong" {
   retention_in_days = 7
 }
 
+resource "aws_cloudwatch_log_group" "ecs_xray" {
+  name              = "/ecs/gtio-xray-${var.environment}"
+  retention_in_days = 7
+}
+
 # ECR
 resource "aws_ecr_repository" "backend" {
   name                 = "gtio-backend-${var.environment}"
@@ -198,7 +203,8 @@ resource "aws_ecs_task_definition" "app" {
       environment = [
         { name = "ASPNETCORE_ENVIRONMENT", value = title(var.environment) },
         { name = "ASPNETCORE_URLS", value = "http://+:8080" },
-        { name = "Db__ConnString", value = "server=${var.db_address};port=${var.db_port};uid=${var.db_user};pwd=${var.db_password};database=${var.db_name};" }
+        { name = "Db__ConnString", value = "server=${var.db_address};port=${var.db_port};uid=${var.db_user};pwd=${var.db_password};database=${var.db_name};" },
+        { name = "AWS_XRAY_DAEMON_ADDRESS", value = "127.0.0.1:2000" }
       ]
       logConfiguration = {
         logDriver = "awslogs"
@@ -206,6 +212,28 @@ resource "aws_ecs_task_definition" "app" {
           "awslogs-group"         = aws_cloudwatch_log_group.ecs_backend.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "backend"
+        }
+      }
+    },
+    {
+      name              = "xray-daemon"
+      image             = "amazon/aws-xray-daemon:latest"
+      essential         = true
+      cpu               = 32
+      memoryReservation = 256
+      portMappings = [
+        {
+          containerPort = 2000
+          hostPort      = 2000
+          protocol      = "udp"
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs_xray.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "xray"
         }
       }
     }
