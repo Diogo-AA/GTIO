@@ -46,4 +46,7 @@ module "observability" {
   ecs_cluster_name = module.compute.ecs_cluster_name
   ecs_service_name = module.compute.ecs_service_name
   db_instance_id   = module.persistence.db_instance_id
+
+  ecs_backend_log_group_name = module.compute.ecs_backend_log_group_name
+  ecs_kong_log_group_name    = module.compute.ecs_kong_log_group_name
 }

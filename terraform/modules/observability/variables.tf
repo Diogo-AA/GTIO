@@ -56,3 +56,19 @@ variable "alarm_rds_memory_threshold" {
   type        = number
   default     = 100000000 # 100 MB
 }
+
+variable "ecs_backend_log_group_name" {
+  description = "Nombre del log group del backend ECS"
+  type        = string
+}
+
+variable "ecs_kong_log_group_name" {
+  description = "Nombre del log group de Kong ECS"
+  type        = string
+}
+
+variable "alarm_backend_errors_threshold" {
+  description = "Umbral de errores de backend extraídos de logs por minuto"
+  type        = number
+  default     = 5
+}
