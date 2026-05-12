@@ -3,7 +3,12 @@ output "bucket_name" {
   value       = aws_s3_bucket.frontend.id
 }
 
-output "website_endpoint" {
-  description = "URL del S3 Website Endpoint (acceso directo, sin CloudFront)"
-  value       = aws_s3_bucket_website_configuration.frontend.website_endpoint
+output "distribution_id" {
+  description = "ID de la distribucion CloudFront del frontend"
+  value       = aws_cloudfront_distribution.frontend.id
+}
+
+output "cloudfront_domain" {
+  description = "Dominio publico del frontend servido por CloudFront"
+  value       = aws_cloudfront_distribution.frontend.domain_name
 }
