@@ -50,3 +50,8 @@ module "observability" {
   ecs_backend_log_group_name = module.compute.ecs_backend_log_group_name
   ecs_kong_log_group_name    = module.compute.ecs_kong_log_group_name
 }
+
+module "frontend" {
+  source      = "../../modules/frontend"
+  environment = "pre"
+}
