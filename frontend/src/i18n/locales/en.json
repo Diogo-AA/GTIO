@@ -1,6 +1,6 @@
-{
+﻿{
   "nav": {
-    "brand": "OT Voting",
+    "brand": "OT Votación",
     "galas": "Shows",
     "usuarios": "Users",
     "perfil": "My Profile",
@@ -20,10 +20,10 @@
     "placeholderContrasena": "Password",
     "placeholderContrasenaMin": "At least 8 characters",
     "placeholderRepetir": "Repeat your password",
-    "placeholder632": "6–32 characters",
+    "placeholder632": "6â€“32 characters",
     "entrar": "Sign in",
     "demo": "Demo access",
-    "demoInfo": "Username: UsuarioDemo · ID: 1",
+    "demoInfo": "Username: UsuarioDemo Â· ID: 1",
     "contrasenasNoCoinciden": "Passwords do not match",
     "cuentaCreada": "Account created. Please sign in.",
     "bienvenido": "Welcome, {{nombre}}",
@@ -31,17 +31,17 @@
   },
   "galas": {
     "titulo": "Available shows",
-    "actualizar": "↺ Refresh",
+    "actualizar": "â†º Refresh",
     "cargando": "Loading shows...",
     "sinGalas": "No shows",
     "sinGalasMensaje": "No shows available yet.",
     "candidatos": "{{n}} contestants",
     "votos": "{{n}} votes",
-    "verDetalle": "View detail →",
+    "verDetalle": "View detail â†’",
     "errorCargar": "Could not load shows"
   },
   "votar": {
-    "volver": "← Back",
+    "volver": "â† Back",
     "votosTotales": "{{n}} total votes",
     "candidatos": "Contestants",
     "resultados": "Results",
@@ -53,7 +53,7 @@
   },
   "usuarios": {
     "titulo": "Registered users",
-    "actualizar": "↺ Refresh",
+    "actualizar": "â†º Refresh",
     "cargando": "Loading...",
     "sinUsuarios": "No users",
     "id": "ID",
@@ -87,8 +87,9 @@
   "common": {
     "cargando": "Loading...",
     "error": "Error",
-    "cerrar": "✕",
+    "cerrar": "âœ•",
     "activarModoOscuro": "Enable dark mode",
     "activarModoClaro": "Enable light mode"
   }
 }
+

@@ -1,6 +1,6 @@
-{
+﻿{
   "nav": {
-    "brand": "OT Voting",
+    "brand": "OT Votación",
     "galas": "Galak",
     "usuarios": "Erabiltzaileak",
     "perfil": "Nire Profila",
@@ -20,10 +20,10 @@
     "placeholderContrasena": "Pasahitza",
     "placeholderContrasenaMin": "8 karaktere gutxienez",
     "placeholderRepetir": "Errepikatu pasahitza",
-    "placeholder632": "6–32 karaktere",
+    "placeholder632": "6â€“32 karaktere",
     "entrar": "Sartu",
     "demo": "Demo sarbidea",
-    "demoInfo": "Erabiltzailea: UsuarioDemo · ID: 1",
+    "demoInfo": "Erabiltzailea: UsuarioDemo Â· ID: 1",
     "contrasenasNoCoinciden": "Pasahitzak ez datoz bat",
     "cuentaCreada": "Kontua sortuta. Hasi saioa orain.",
     "bienvenido": "Ongi etorri, {{nombre}}",
@@ -31,17 +31,17 @@
   },
   "galas": {
     "titulo": "Eskuragarri dauden galak",
-    "actualizar": "↺ Eguneratu",
+    "actualizar": "â†º Eguneratu",
     "cargando": "Galak kargatzen...",
     "sinGalas": "Galarik ez",
     "sinGalasMensaje": "Oraindik ez dago galarik eskuragarri.",
     "candidatos": "{{n}} hautagai",
     "votos": "{{n}} boto",
-    "verDetalle": "Xehetasunak ikusi →",
+    "verDetalle": "Xehetasunak ikusi â†’",
     "errorCargar": "Ezin izan dira galak kargatu"
   },
   "votar": {
-    "volver": "← Itzuli",
+    "volver": "â† Itzuli",
     "votosTotales": "{{n}} boto guztira",
     "candidatos": "Hautagaiak",
     "resultados": "Emaitzak",
@@ -53,7 +53,7 @@
   },
   "usuarios": {
     "titulo": "Erregistratutako erabiltzaileak",
-    "actualizar": "↺ Eguneratu",
+    "actualizar": "â†º Eguneratu",
     "cargando": "Kargatzen...",
     "sinUsuarios": "Erabiltzailerik ez",
     "id": "ID",
@@ -87,8 +87,9 @@
   "common": {
     "cargando": "Kargatzen...",
     "error": "Errorea",
-    "cerrar": "✕",
+    "cerrar": "âœ•",
     "activarModoOscuro": "Ilunpeko modua aktibatu",
     "activarModoClaro": "Argi modua aktibatu"
   }
 }
+

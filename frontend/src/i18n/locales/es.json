@@ -1,47 +1,47 @@
-{
+﻿{
   "nav": {
-    "brand": "OT Voting",
+    "brand": "OT Votación",
     "galas": "Galas",
     "usuarios": "Usuarios",
     "perfil": "Mi Perfil",
     "salir": "Salir",
-    "iniciarSesion": "Iniciar Sesión",
+    "iniciarSesion": "Iniciar SesiÃ³n",
     "conectado": "Estado: Conectado",
     "desconectado": "Estado: Desconectado"
   },
   "login": {
-    "titulo": "Sistema de Votación",
-    "iniciarSesion": "Iniciar sesión",
+    "titulo": "Sistema de VotaciÃ³n",
+    "iniciarSesion": "Iniciar sesiÃ³n",
     "crearCuenta": "Crear cuenta",
     "usuario": "Usuario",
-    "contrasena": "Contraseña",
-    "repetirContrasena": "Repetir contraseña",
+    "contrasena": "ContraseÃ±a",
+    "repetirContrasena": "Repetir contraseÃ±a",
     "placeholderUsuario": "Nombre de usuario",
-    "placeholderContrasena": "Contraseña",
-    "placeholderContrasenaMin": "Mínimo 8 caracteres",
-    "placeholderRepetir": "Repite la contraseña",
-    "placeholder632": "6–32 caracteres",
+    "placeholderContrasena": "ContraseÃ±a",
+    "placeholderContrasenaMin": "MÃ­nimo 8 caracteres",
+    "placeholderRepetir": "Repite la contraseÃ±a",
+    "placeholder632": "6â€“32 caracteres",
     "entrar": "Entrar",
-    "demo": "Acceso de demostración",
-    "demoInfo": "Usuario: UsuarioDemo · ID: 1",
-    "contrasenasNoCoinciden": "Las contraseñas no coinciden",
-    "cuentaCreada": "Cuenta creada. Ahora inicia sesión.",
+    "demo": "Acceso de demostraciÃ³n",
+    "demoInfo": "Usuario: UsuarioDemo Â· ID: 1",
+    "contrasenasNoCoinciden": "Las contraseÃ±as no coinciden",
+    "cuentaCreada": "Cuenta creada. Ahora inicia sesiÃ³n.",
     "bienvenido": "Bienvenido, {{nombre}}",
     "modoDemo": "Modo demo activado"
   },
   "galas": {
     "titulo": "Galas disponibles",
-    "actualizar": "↺ Actualizar",
+    "actualizar": "â†º Actualizar",
     "cargando": "Cargando galas...",
     "sinGalas": "Sin galas",
-    "sinGalasMensaje": "Todavía no hay galas disponibles.",
+    "sinGalasMensaje": "TodavÃ­a no hay galas disponibles.",
     "candidatos": "{{n}} candidatos",
     "votos": "{{n}} votos",
-    "verDetalle": "Ver detalle →",
+    "verDetalle": "Ver detalle â†’",
     "errorCargar": "No se pudieron cargar las galas"
   },
   "votar": {
-    "volver": "← Volver",
+    "volver": "â† Volver",
     "votosTotales": "{{n}} votos totales",
     "candidatos": "Candidatos",
     "resultados": "Resultados",
@@ -53,7 +53,7 @@
   },
   "usuarios": {
     "titulo": "Usuarios registrados",
-    "actualizar": "↺ Actualizar",
+    "actualizar": "â†º Actualizar",
     "cargando": "Cargando...",
     "sinUsuarios": "Sin usuarios",
     "id": "ID",
@@ -68,27 +68,28 @@
     "gala": "Gala",
     "candidato": "Candidato",
     "fecha": "Fecha",
-    "sinVotos": "Este usuario aún no ha votado."
+    "sinVotos": "Este usuario aÃºn no ha votado."
   },
   "perfil": {
     "titulo": "Mi Perfil",
     "conectadoComo": "Conectado como",
     "votosEmitidos": "{{n}} votos emitidos",
-    "cerrarSesion": "Cerrar sesión",
+    "cerrarSesion": "Cerrar sesiÃ³n",
     "historial": "Historial de votos",
     "cargando": "Cargando tu perfil...",
-    "sinVotos": "Sin votos todavía",
-    "sinVotosMensaje": "Aún no has votado en ninguna gala.",
+    "sinVotos": "Sin votos todavÃ­a",
+    "sinVotosMensaje": "AÃºn no has votado en ninguna gala.",
     "gala": "Gala",
     "candidato": "Candidato",
     "fechaVoto": "Fecha del voto",
-    "sesionCerrada": "Sesión cerrada correctamente"
+    "sesionCerrada": "SesiÃ³n cerrada correctamente"
   },
   "common": {
     "cargando": "Cargando...",
     "error": "Error",
-    "cerrar": "✕",
+    "cerrar": "âœ•",
     "activarModoOscuro": "Activar modo oscuro",
     "activarModoClaro": "Activar modo claro"
   }
 }
+
