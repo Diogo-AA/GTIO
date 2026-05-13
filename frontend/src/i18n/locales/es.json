@@ -1,6 +1,6 @@
 ﻿{
   "nav": {
-    "brand": "OT Votación",
+    "brand": "OT Votaciones",
     "galas": "Galas",
     "usuarios": "Usuarios",
     "perfil": "Mi Perfil",
@@ -92,3 +92,4 @@
     "activarModoClaro": "Activar modo claro"
   }
 }
+
