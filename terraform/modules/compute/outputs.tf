@@ -42,3 +42,13 @@ output "ecs_kong_log_group_name" {
   description = "Nombre del log group de Kong"
   value       = aws_cloudwatch_log_group.ecs_kong.name
 }
+
+output "cloudfront_domain_name" {
+  description = "Dominio HTTPS de CloudFront (es la URL pública del frontend)"
+  value       = aws_cloudfront_distribution.app.domain_name
+}
+
+output "cloudfront_url" {
+  description = "URL completa con https:// para abrir la web"
+  value       = "https://${aws_cloudfront_distribution.app.domain_name}"
+}

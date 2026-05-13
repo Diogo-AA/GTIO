@@ -4,8 +4,13 @@ output "api_url" {
 }
 
 output "frontend_url" {
-  description = "URL del frontend servida por el mismo ALB que la API"
+  description = "URL HTTP directa al ALB (no usar con Auth0, no es HTTPS)"
   value       = "http://${module.compute.alb_dns_name}"
+}
+
+output "web_url" {
+  description = "URL HTTPS pública de la aplicación (CloudFront). ESTA es la que se mete en el navegador."
+  value       = module.compute.cloudfront_url
 }
 
 output "frontend_ecr_url" {
