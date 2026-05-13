@@ -2,10 +2,11 @@ name: CI/CD — Deploy to AWS ECS
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "pre", "pro"]
     paths:
       - "Backend/**"
       - "frontend/**"
+      - "terraform/**"
       - ".github/workflows/deploy-aws.yml"
   workflow_dispatch: # Permite lanzarlo manualmente eligiendo el entorno
     inputs:
@@ -58,11 +59,48 @@ jobs:
           path: "**/coverage.cobertura.xml"
           retention-days: 7
 
-  # ─── 2a. Build & Push Backend a ECR ────────────────────────────────────────
+  # ─── 2. Terraform (delegado a HCP Terraform Cloud) ─────────────────────────
+  # Lanzamos terraform desde GitHub Actions, pero como el backend es `cloud {}`,
+  # la ejecución real ocurre en los runners de HCP Terraform Cloud (workspace
+  # GTIO-WORKSPACE-<env>) con las variables que ya están configuradas allí
+  # (db_user, db_password, alarm_email, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+  # AWS_SESSION_TOKEN). Esto garantiza que la infraestructura está aplicada
+  # antes de intentar construir/desplegar contenedores.
+  terraform:
+    name: Terraform Apply (${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }})
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Terraform CLI
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+          cli_config_credentials_token: ${{ secrets.TFC_API_TOKEN }}
+
+      - name: Terraform fmt check
+        working-directory: terraform
+        run: terraform fmt -check -recursive .
+
+      - name: Terraform init
+        working-directory: terraform/environments/${{ env.TARGET_ENV }}
+        run: terraform init
+
+      - name: Terraform validate
+        working-directory: terraform/environments/${{ env.TARGET_ENV }}
+        run: terraform validate
+
+      - name: Terraform apply (auto-approve, ejecuta remoto en HCP)
+        working-directory: terraform/environments/${{ env.TARGET_ENV }}
+        run: terraform apply -auto-approve -input=false
+
+  # ─── 3a. Build & Push Backend a ECR ────────────────────────────────────────
   build-backend:
     name: Build & Push Backend a ECR
     runs-on: ubuntu-latest
-    needs: test
+    needs: terraform
     outputs:
       image: ${{ steps.build-image.outputs.image }}
 
@@ -94,11 +132,11 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-  # ─── 2b. Build & Push Frontend a ECR ──────────────────────────────────────
+  # ─── 3b. Build & Push Frontend a ECR ──────────────────────────────────────
   build-frontend:
     name: Build & Push Frontend a ECR
     runs-on: ubuntu-latest
-    needs: test
+    needs: terraform
     outputs:
       image: ${{ steps.build-image.outputs.image }}
 
@@ -135,12 +173,11 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-  # ─── 3. Deploy a ECS ───────────────────────────────────────────────────────
+  # ─── 4. Deploy a ECS ───────────────────────────────────────────────────────
   deploy:
     name: Deploy a ECS Fargate
     runs-on: ubuntu-latest
     needs: [build-backend, build-frontend]
-    environment: ${{ github.event.inputs.environment || (github.ref_name == 'main' && 'dev') || github.ref_name }}
 
     steps:
       - name: Configurar credenciales AWS
