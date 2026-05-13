@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Backend.Contracts.Requests;
 using Backend.Contracts.Responses;
 using Backend.Services;
+using Backend.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Endpoints;
@@ -37,6 +38,22 @@ public static class VotingEndpoints
             .ProducesValidationProblem()
             .RequireAuthorization("Usuario")
             .WithName("GetGala");
+
+        // Solo admin puede listar usuarios
+        app.MapGet("usuarios", GetUsuarios)
+            .Produces<GetUsuariosResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
+            .RequireAuthorization("Admin")
+            .WithName("GetUsuarios");
+
+        // Admin puede consultar cualquier usuario; un usuario normal solo su propio perfil
+        app.MapGet("usuarios/{identifier}", GetUsuario)
+            .Produces<GetUsuarioDetalleResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
+            .RequireAuthorization("Usuario")
+            .WithName("GetUsuario");
     }
 
     public static async Task<IResult> CrearVoto(
@@ -55,6 +72,34 @@ public static class VotingEndpoints
             return TypedResults.BadRequest();
 
         return TypedResults.Created();
+    }
+
+    public static async Task<IResult> GetUsuarios(
+        IUsuarioRepository usuarioRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var usuarios = await usuarioRepository.GetAllAsync(cancellationToken);
+        return TypedResults.Ok(new GetUsuariosResponse { Usuarios = usuarios });
+    }
+
+    public static async Task<IResult> GetUsuario(
+        [FromRoute] string identifier,
+        IUsuarioRepository usuarioRepository,
+        ClaimsPrincipal user,
+        CancellationToken cancellationToken
+    )
+    {
+        var auth0Sub = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (auth0Sub is null)
+            return TypedResults.Forbid();
+
+        var isAdmin = user.IsInRole("admin");
+        if (!isAdmin && identifier != auth0Sub)
+            return TypedResults.Forbid();
+
+        var response = await usuarioRepository.GetByIdentifierAsync(identifier, cancellationToken);
+        return TypedResults.Ok(response);
     }
 
     public static async Task<IResult> GetGalas(

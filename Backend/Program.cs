@@ -2,6 +2,7 @@ using Amazon.XRay.Recorder.Core;
 using Amazon.XRay.Recorder.Handlers.AspNetCore;
 using Backend.Data;
 using Backend.Endpoints;
+using Backend.Infrastructure;
 using Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -68,9 +69,12 @@ builder.Services.AddMySqlDataSource(builder.Configuration["Db:ConnString"]!);
 
 builder.Services.AddScoped<IGalaRepository, GalaRepository>();
 builder.Services.AddScoped<IVotoRepository, VotoRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IVotingService, VotingService>();
 
 var app = builder.Build();
+
+await DatabaseInitializer.InitializeAsync(app);
 
 // X-Ray: middleware que captura cada request entrante como un segmento de traza
 app.UseXRay("gtio-backend");
