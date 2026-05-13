@@ -41,11 +41,6 @@ variable "backend_image_tag" {
   default = "latest"
 }
 
-variable "frontend_image_tag" {
-  type    = string
-  default = "latest"
-}
-
 variable "desired_count" {
   type    = number
   default = 1

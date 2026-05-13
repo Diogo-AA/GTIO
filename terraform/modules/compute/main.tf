@@ -53,24 +53,6 @@ resource "aws_lb_target_group" "backend" {
   }
 }
 
-resource "aws_lb_target_group" "frontend" {
-  name        = "gtio-frontend-tg-${var.environment}"
-  port        = 80
-  protocol    = "HTTP"
-  target_type = "ip"
-  vpc_id      = var.vpc_id
-
-  health_check {
-    path                = "/"
-    matcher             = "200"
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 3
-  }
-}
-
-# Por defecto el ALB enruta al frontend (nginx). Las rutas de la API caen en la regla de abajo.
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.app.arn
   port              = 80
@@ -78,23 +60,7 @@ resource "aws_lb_listener" "http" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.frontend.arn
-  }
-}
-
-resource "aws_lb_listener_rule" "api" {
-  listener_arn = aws_lb_listener.http.arn
-  priority     = 100
-
-  action {
-    type             = "forward"
     target_group_arn = aws_lb_target_group.backend.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/votos*", "/galas*"]
-    }
   }
 }
 
@@ -160,61 +126,16 @@ resource "aws_ecr_lifecycle_policy" "backend_policy" {
 EOF
 }
 
-resource "aws_ecr_repository" "frontend" {
-  name                 = "gtio-frontend-${var.environment}"
-  image_tag_mutability = "MUTABLE"
-
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-}
-
-resource "aws_ecr_lifecycle_policy" "frontend_policy" {
-  repository = aws_ecr_repository.frontend.name
-
-  policy = <<EOF
-{
-    "rules": [
-        {
-            "rulePriority": 1,
-            "description": "Keep last 5 images",
-            "selection": {
-                "tagStatus": "any",
-                "countType": "imageCountMoreThan",
-                "countNumber": 5
-            },
-            "action": {
-                "type": "expire"
-            }
-        }
-    ]
-}
-EOF
-}
-
-resource "aws_cloudwatch_log_group" "ecs_frontend" {
-  name              = "/ecs/gtio-frontend-${var.environment}"
-  retention_in_days = 7
-}
-
 # ECS Task & Service
 resource "aws_security_group" "ecs_task_sg" {
   name        = "gtio-ecs-task-sg-${var.environment}"
-  description = "Permitir trafico a Kong y nginx desde el ALB"
+  description = "Permitir trafico a Kong desde el ALB"
   vpc_id      = var.vpc_id
 
   ingress {
     description     = "Kong desde el ALB"
     from_port       = 8000
     to_port         = 8000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb_sg.id]
-  }
-
-  ingress {
-    description     = "Nginx (frontend) desde el ALB"
-    from_port       = 80
-    to_port         = 80
     protocol        = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
   }
@@ -315,26 +236,6 @@ resource "aws_ecs_task_definition" "app" {
           "awslogs-stream-prefix" = "xray"
         }
       }
-    },
-    {
-      name      = "frontend"
-      image     = "${aws_ecr_repository.frontend.repository_url}:${var.frontend_image_tag}"
-      essential = true
-      portMappings = [
-        {
-          containerPort = 80
-          hostPort      = 80
-          protocol      = "tcp"
-        }
-      ]
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs_frontend.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "frontend"
-        }
-      }
     }
   ])
 }
@@ -356,11 +257,5 @@ resource "aws_ecs_service" "app" {
     target_group_arn = aws_lb_target_group.backend.arn
     container_name   = "kong"
     container_port   = 8000
-  }
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.frontend.arn
-    container_name   = "frontend"
-    container_port   = 80
   }
 }
